@@ -23,38 +23,46 @@ class BarChart {
 
         this.scaler = this.chartHeight / this.maxValue;
 
-        this.axisColour = color(0, 0, 0);
-        this.barColour = color(0, 0, 255);
-        this.axisTextColour = color(125);
-        this.axisTickTextColour = color(255, 0, 0);
-        this.axisTickColor = color(0, 255, 0);
-        this.chartTickLinesColor = color(60, 125, 0);
+            this.axisColour = "black";
+            this.barColour = "black";
+            this.axisTextColour = "black";
+            this.axisTickTextColour = "black";
+            this.axisTickColor = "black";
+            this.chartTickLinesColor = "black";
     }
 
-    renderBars() {
-        push();
-        translate(this.chartPosX, this.chartPosY);
-        push();
+renderBars() {
+    push();
+    translate(this.chartPosX, this.chartPosY);
+
+    push();
+    
+    if (this.orientation === 'vertical') {
+        scale(1, -1); // Invert the y axis
+
         translate(this.margin, 0);
         for (let i = 0; i < this.data.length; i++) {
             let jump = (this.barWidth + this.gap) * i;
             fill(this.barColour);
             noStroke();
 
-
-            if(this.orientation === 'vertical') {
-                rect(jump, 0, this.barWidth, -this.data[i][this.yValue] * this.scaler);
-            } else if(this.orientation === 'horizontal') {
-                // Hotizontal bars
-                let barHeight = this.barWidth;
-                let barWidth = this.data[i][this.yValue] * this.scaler;
-
-                rect(0, jump, barWidth, barHeight);
-            }
+            rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0,0,5,5);
         }
-        pop();
-        pop();
+    } else if (this.orientation === 'horizontal') {
+        translate(0, -this.margin); // Move the chart up by the margin
+        for (let i = 0; i < this.data.length; i++) {
+            let jump = (this.barWidth + this.gap) * i;
+            fill(this.barColour);
+            noStroke();
+            let barHeight = this.barWidth;
+            let barWidth = this.data[i][this.yValue] * this.scaler;
+            rect(0, -jump - this.margin , barWidth, barHeight, 0, 5, 0, 0);
+        }
     }
+    pop();
+    pop();
+}
+
 
     renderAxis() {
         push();
@@ -67,8 +75,8 @@ class BarChart {
             line(0, 0, 0, -this.chartHeight);
             line(0, 0, this.chartWidth, 0);
         } else if (this.orientation === 'horizontal') {
-            line(0, 0, this.chartWidth, 0);
-            line(0, 0, 0, -this.chartHeight);
+            line(0, 0, 0, -this.chartWidth);
+            line(0, 0, this.chartHeight, 0);
         }
         pop();
     }
@@ -82,17 +90,25 @@ class BarChart {
             let jump = (this.barWidth + this.gap) * i;
 
             // X-axis labels
-            fill(this.axisTextColour);
-            textAlign(LEFT, CENTER);
-            textSize(10);
+            // fill(this.axisTextColour);
+            // textAlign(LEFT, CENTER);
+            // textSize(10);
             push();
-
             if (this.orientation === 'vertical') {
                 translate(jump + (this.barWidth / 2), 10);
+                fill(this.axisTextColour);
+                textAlign(LEFT, CENTER);
+                noStroke();
+
+                textSize(10);
                 rotate(45);
                 text(this.data[i][this.xValue], 0, 0);
             } else if (this.orientation === 'horizontal') {
-                translate(0, jump + (this.barWidth / 2));
+                translate(-this.margin -5, -jump + (this.barWidth / 2));
+                fill(this.axisTextColour);
+                textAlign(RIGHT, CENTER);
+                noStroke();
+                textSize(10);
                 rotate(0);
                 text(this.data[i][this.xValue], 0, 0);
             }
@@ -102,7 +118,7 @@ class BarChart {
         pop();
     }
 
-    renderYaxisTicks() {
+    renderTicks() {
         push();
         translate(this.chartPosX, this.chartPosY);
         noFill();
@@ -133,7 +149,6 @@ class BarChart {
             let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Always use increments of 50 for the y axis
             for(let i = 0; i <= this.maxValue; i += stepSize) {
                 let xPos = i * this.scaler;
-    
 
                 if (i != 0) {
                     stroke(this.axisTickColor);
@@ -159,18 +174,49 @@ class BarChart {
 
         let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Number of divisions
 
-        for (let i = 0; i <= this.maxValue; i += stepSize) {
-            let yPos = -(i * this.chartHeight / this.maxValue);
-            // Draw grid lines
 
-            // If i is not 0 then draw the line
-            if (i != 0) {
-                stroke(this.chartTickLinesColor);
-                strokeWeight(1);
-                line(0, yPos, this.chartWidth, yPos);
+        if(this.orientation === 'vertical') {
+            for (let i = 0; i <= this.maxValue; i += stepSize) {
+                let yPos = -i * this.scaler;
+                // Draw grid lines
+
+                // If i is not 0 then draw the line
+                if (i != 0) {
+                    stroke(this.chartTickLinesColor);
+                    strokeWeight(1);
+                    line(0, yPos, this.chartWidth, yPos);
+                }
+            }
+        }else if(this.orientation === 'horizontal') {
+            for (let i = 0; i <= this.maxValue; i += stepSize) {
+                let xPos = i * this.scaler;
+
+                if (i != 0) {
+                    stroke(this.chartTickLinesColor);
+                    strokeWeight(1);
+                    line(xPos, 0, xPos, -this.chartWidth);
+                }
             }
         }
         pop();
+    }
+
+    setColors() {
+        if (this.orientation === 'vertical') {
+            this.axisColour = color(120, 119, 119);
+            this.barColour = color(0, 146, 153);
+            this.axisTextColour = color(120, 119, 119);
+            this.axisTickTextColour = color(120, 119, 119);
+            this.axisTickColor = color(120, 119, 119);
+            this.chartTickLinesColor = color(230, 224, 223);
+        } else if (this.orientation === 'horizontal') {
+            this.axisColour = color(0, 0, 0);
+            this.barColour = color(0, 0, 255);
+            this.axisTextColour = color(125,0,0);
+            this.axisTickTextColour = color(255, 0, 0);
+            this.axisTickColor = color(255, 0, 0);
+            this.chartTickLinesColor = color(60, 125, 0);
+        }
     }
 }
 

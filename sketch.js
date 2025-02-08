@@ -39,14 +39,16 @@ function setup() {
 
 // Will run over and over.
 function draw() {
-    background(200);
+    background(252, 245, 243);
 
     charts.forEach(chart => {
-        chart.renderBars();
+        chart.setColors();
         chart.renderLabels();
-        chart.renderAxis();
-        chart.renderYaxisTicks();
+        chart.renderTicks();
         chart.renderTickLines();
+        chart.renderBars();
+        chart.renderAxis();
+
     }) 
     // If i change the name of "renderBars" i have to change it here
 

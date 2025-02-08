@@ -1,0 +1,29 @@
+https://www.canva.com/design/play?category=tADWPe0sPmk&template=EAFEyCaPTyE
+
+https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+
+https://www.linkedin.com/advice/3/what-steps-using-javascript-html-form-manipulation-jzhne#:~:text=To%20access%20the%20elements%20of,element%20with%20the%20specified%20index.
+
+https://www.youtube.com/watch?v=ikR9DsGMUMc
+
+
+for (let i = 0; i < this.data.length; i++) {
+    let jump = (this.barWidth + this.gap) * i;
+    let barHeight = -this.data[i][this.yValue] * this.scaler; // Negative to grow upwards
+    let radius = 10; // Curve radius
+
+    fill(this.barColour);
+    noStroke();
+
+    // Draw a custom bar with a rounded top
+    beginShape();
+    vertex(jump, 0);  // Bottom-left
+    vertex(jump + this.barWidth, 0); // Bottom-right
+    vertex(jump + this.barWidth, barHeight + radius); // Right straight part
+    quadraticVertex(jump + this.barWidth / 2, barHeight, jump, barHeight + radius); // Curved top
+    vertex(jump, barHeight + radius); // Left straight part
+    endShape(CLOSE);
+}
+
+
+if i wanted to curve the vertical chart
