@@ -177,8 +177,15 @@ function cleanData() {
     } 
 }
 
+function getSelectedValues() {
+    // Get all checked checkboxes for 'YAxis'
+    const selectedValues = Array.from(document.querySelectorAll('input[name="YAxis"]:checked')).map(checkbox => checkbox.value); // Get the value of each checked checkbox
+    return selectedValues;
+}
+
+
 function generateChart() {
-    const yAxisData = document.getElementById("YAxis").value;
+    const yAxisData =  getSelectedValues();
     const barWidth = parseInt(document.getElementById("barWidth").value);
     const margin = parseInt(document.getElementById("margin").value);
     const chartHeight = parseInt(document.getElementById("chartHeight").value);
@@ -188,6 +195,10 @@ function generateChart() {
     const YPos = parseInt(document.getElementById("YPos").value);
     const chartOrientation = document.getElementById("chartOrientation").value;
 
+    if (Array.isArray(yAxisData) && yAxisData.length <= 1 && chartOrientation === 'stacked') {
+        alert("Error: A stacked bar chart requires at least two datasets.");
+        return;  // Stop execution if the condition is met
+    }
 
     // Create the bar chart with the user inputs
     new BarChart(cleanedData, 'Age_Group', 'Male', tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos);

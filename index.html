@@ -31,15 +31,27 @@
 				<select id="chartOrientation">
 					<option value="vertical">Vertical Bar Chart</option>
 					<option value="horizontal">Horizontal Bar Chart</option>
+					<option value="stacked">Stacked Bar Chart</option>
 				</select><br><br>
 
 
-				<label for="YAxis">Y Axis Data: </label>
-				<select id="YAxis" name="YAxis">
+				<!-- <label for="YAxis">Y Axis Data: </label>
+				<select id="YAxis" name="YAxis" multiple>
 					<option value="Female">Female</option>
 					<option value="Male">Male</option>
-				</select><br><br>
-			
+				</select> -->
+
+				<label for="YAxis">Y Axis Data: </label><br>
+				<input type="checkbox" id="YAxis" name="YAxis" value="Female">
+				<label for="female">Female</label><br>
+				
+				<input type="checkbox" id="YAxis" name="YAxis" value="Male">
+				<label for="male">Male</label><br>
+				
+				<input type="checkbox" id="other" name="YAxis" value="Other">
+				<label for="other">Other</label><br><br>
+				
+
 				<label for="barWidth">Bar Width: </label>
 				<input type="number" id="barWidth" value="15"><br><br>
 			

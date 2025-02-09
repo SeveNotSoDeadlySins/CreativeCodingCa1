@@ -37,31 +37,50 @@ renderBars() {
 
     push();
     
-    if (this.orientation === 'vertical') {
-        scale(1, -1); // Invert the y axis
 
-        translate(this.margin, 0);
-        for (let i = 0; i < this.data.length; i++) {
-            let jump = (this.barWidth + this.gap) * i;
-            fill(this.barColour);
-            noStroke();
+    if (this.yValue.length > 1) {
+            scale(1, -1); // Invert the y axis
+        
+            translate(this.margin, 0);
+            for (let i = 0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                let bar2 = this.data[i][this.yValue[i+1]] * this.scaler;
+                fill(this.barColour);
+                noStroke();
 
-            rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0,0,5,5);
+                rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler);
+                rect(bar2, 0, this.barWidth, this.data[i][this.yValue] * this.scaler);
+
+            }//DO THIS TOMMOROW
         }
-    } else if (this.orientation === 'horizontal') {
-        translate(0, -this.margin); // Move the chart up by the margin
-        for (let i = 0; i < this.data.length; i++) {
-            let jump = (this.barWidth + this.gap) * i;
-            fill(this.barColour);
-            noStroke();
-            let barHeight = this.barWidth;
-            let barWidth = this.data[i][this.yValue] * this.scaler;
-            rect(0, -jump - this.margin , barWidth, barHeight, 0, 5, 0, 0);
+     else {
+        if (this.orientation === 'vertical') {
+            scale(1, -1); // Invert the y axis
+    
+            translate(this.margin, 0);
+            for (let i = 0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                fill(this.barColour);
+                noStroke();
+    
+                rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0,0,5,5);
+            }
+        }
+     else if (this.orientation === 'horizontal') {
+            translate(0, -this.margin); // Move the chart up by the margin
+            for (let i = 0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                fill(this.barColour);
+                noStroke();
+                let barHeight = this.barWidth;
+                let barWidth = this.data[i][this.yValue] * this.scaler;
+                rect(0, -jump - this.margin , barWidth, barHeight, 0, 5, 0, 0);
+            }
         }
     }
     pop();
     pop();
-}
+    }
 
 
     renderAxis() {
@@ -210,6 +229,13 @@ renderBars() {
             this.axisTickColor = color(120, 119, 119);
             this.chartTickLinesColor = color(230, 224, 223);
         } else if (this.orientation === 'horizontal') {
+            this.axisColour = color(0, 0, 0);
+            this.barColour = color(0, 0, 255);
+            this.axisTextColour = color(125,0,0);
+            this.axisTickTextColour = color(255, 0, 0);
+            this.axisTickColor = color(255, 0, 0);
+            this.chartTickLinesColor = color(60, 125, 0);
+        } else if (this.orientation === 'stacked') {
             this.axisColour = color(0, 0, 0);
             this.barColour = color(0, 0, 255);
             this.axisTextColour = color(125,0,0);
