@@ -36,24 +36,9 @@ renderBars() {
     translate(this.chartPosX, this.chartPosY);
 
     push();
-    
-
-    if (this.yValue.length > 1) {
-            scale(1, -1); // Invert the y axis
-        
-            translate(this.margin, 0);
-            for (let i = 0; i < this.data.length; i++) {
-                let jump = (this.barWidth + this.gap) * i;
-                let bar2 = this.data[i][this.yValue[i+1]] * this.scaler;
-                fill(this.barColour);
-                noStroke();
-
-                rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler);
-                rect(bar2, 0, this.barWidth, this.data[i][this.yValue] * this.scaler);
-
-            }//DO THIS TOMMOROW
-        }
-     else {
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////Vertical Bar Chart//////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
         if (this.orientation === 'vertical') {
             scale(1, -1); // Invert the y axis
     
@@ -66,7 +51,11 @@ renderBars() {
                 rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0,0,5,5);
             }
         }
-     else if (this.orientation === 'horizontal') {
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////Horizontal Bar Chart//////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (this.orientation === 'horizontal') {
             translate(0, -this.margin); // Move the chart up by the margin
             for (let i = 0; i < this.data.length; i++) {
                 let jump = (this.barWidth + this.gap) * i;
@@ -77,7 +66,52 @@ renderBars() {
                 rect(0, -jump - this.margin , barWidth, barHeight, 0, 5, 0, 0);
             }
         }
-    }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////Stacked Bar Chart //////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (this.orientation === 'stacked') { // not working yet
+            scale(1, -1);
+            translate(this.margin, 0);
+            for (let i = 0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                let femaleHeight = this.data[i]["Female"] * this.scaler;
+                let maleHeight = this.data[i]["Male"] * this.scaler;
+        
+                // Draw Female (bottom)
+                fill(this.barColour);
+                noStroke();
+                rect(jump, 0, this.barWidth, femaleHeight);
+        
+                // Draw Male (stacked on top)
+                fill(this.barColour);
+                rect(jump, femaleHeight, this.barWidth, maleHeight);
+            }
+        }
+
+        else if (this.orientation === 'grouped') {
+            scale(1, -1);
+            translate(this.margin, 0);
+
+            let numCategories = this.yValue.length; // Number of groups (e.g., Male, Female)
+            let totalGroupWidth = this.barWidth * numCategories + (this.gap * (numCategories - 1)); // Total width of one group
+            let colors = ["pink", "blue", "green", "orange"]; // Add more colors if needed
+
+            for (let i = 0; i < this.data.length; i++) {
+                let baseX = (totalGroupWidth + this.gap) * i; // Position for each group
+
+                for (let j = 0; j < numCategories; j++) {
+                    let category = this.yValue[j];
+                    let value = this.data[i][category] * this.scaler;
+
+                    let barX = baseX + (this.barWidth + this.gap) * j; // Offset bars in a group
+
+                    fill(colors[j % colors.length]); // Cycle through colors
+                    noStroke();
+                    rect(barX, 0, this.barWidth, value, 5, 5, 0, 0);
+                }
+            }
+        }
     pop();
     pop();
     }

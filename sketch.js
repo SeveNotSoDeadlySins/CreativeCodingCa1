@@ -195,17 +195,29 @@ function generateChart() {
     const YPos = parseInt(document.getElementById("YPos").value);
     const chartOrientation = document.getElementById("chartOrientation").value;
 
-    if (Array.isArray(yAxisData) && yAxisData.length <= 1 && chartOrientation === 'stacked') {
+    if (Array.isArray(yAxisData) && yAxisData.length === 1 && chartOrientation === 'stacked') {
         alert("Error: A stacked bar chart requires at least two datasets.");
-        return;  // Stop execution if the condition is met
+        console.log("Error: A stacked bar chart requires at least two datasets.");
+        return; 
     }
-
-    // Create the bar chart with the user inputs
-    new BarChart(cleanedData, 'Age_Group', 'Male', tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos);
 
     clear();
 
-    charts = [];
+    charts = []; //If i wasnt more then 1 chart get rid of this line.
+
+    // Checking if theres more then 1 set of data selected and if it is over 1 it will make a Grouped bar chart
+    if (Array.isArray(yAxisData) && yAxisData.length > 1 && chartOrientation === "bar") {
+        // Grouped bar chart
+        yAxisData.forEach((dataset, index) => {
+            let xOffset = index * (barWidth + margin); // Offset bars so they don't overlap
+            let newChart = new BarChart(cleanedData, 'Age_Group', dataset, tickNum, chartHeight, barWidth, margin, axisThickness, XPos + xOffset, YPos, chartOrientation);
+            charts.push(newChart);
+        });
+    } else {
+        // **Single dataset OR stacked bar chart**
+        const newChart = new BarChart(cleanedData, 'Age_Group', yAxisData, tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos, chartOrientation);
+        charts.push(newChart);
+    }
 
     const newChart = new BarChart(cleanedData, 'Age_Group', yAxisData, tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos,chartOrientation);
 
