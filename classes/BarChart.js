@@ -21,14 +21,21 @@ class BarChart {
         // Calculate the width of the chart dynamically
         this.chartWidth = (this.data.length * this.barWidth) + ((this.data.length - 1) * this.gap) + (this.margin * 2);
 
+
+        if (this.orientation === "stacked") {
+            this.maxValue = ceil(max(this.data.map(row => (row["Female"] || 0) + (row["Male"] || 0))) / 10) * 10;
+        } else {
+            this.maxValue = ceil(max(this.data.map(row => row[this.yValue] || 0)) / 10) * 10;
+        }
+
         this.scaler = this.chartHeight / this.maxValue;
 
-            this.axisColour = "black";
-            this.barColour = "black";
-            this.axisTextColour = "black";
-            this.axisTickTextColour = "black";
-            this.axisTickColor = "black";
-            this.chartTickLinesColor = "black";
+        this.axisColour = "black";
+        this.barColour = "black";
+        this.axisTextColour = "black";
+        this.axisTickTextColour = "black";
+        this.axisTickColor = "black";
+        this.chartTickLinesColor = "black";
     }
 
 renderBars() {
@@ -47,7 +54,8 @@ renderBars() {
                 let jump = (this.barWidth + this.gap) * i;
                 fill(this.barColour);
                 noStroke();
-    
+                // console.log(`Index: ${i}, Female Value: ${this.barWidth}, Scaled Height: ${this.scaler} ${this.maxValue}`);  // Debugging
+
                 rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0,0,5,5);
             }
         }
@@ -70,48 +78,61 @@ renderBars() {
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         ///////////////////////////Stacked Bar Chart //////////////////////////////////////////////////////////
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
-        else if (this.orientation === 'stacked') { // not working yet
+        else if (this.orientation === 'stacked') {
             scale(1, -1);
             translate(this.margin, 0);
+            
+            let colors = ["pink", "blue"]; // Colors for the different types of data.
+            
             for (let i = 0; i < this.data.length; i++) {
                 let jump = (this.barWidth + this.gap) * i;
-                let femaleHeight = this.data[i]["Female"] * this.scaler;
-                let maleHeight = this.data[i]["Male"] * this.scaler;
+                let stackedHeight = 0; //Making sure that the stacked height starts at 0.
         
-                // Draw Female (bottom)
-                fill(this.barColour);
+                // Female (bottom)
+                // let firstHeight = this.data[i][this.yValue] * this.scaler;
+                fill(colors[0]); // Pink
                 noStroke();
-                rect(jump, 0, this.barWidth, femaleHeight);
+                let firstValue = this.data[i]["Female"];
+                let firstHeight = firstValue * this.scaler;
+                
+                // console.log(`Index: ${i}, Female Value: ${firstValue}, Scaled Height: ${firstHeight} ${this.maxValue}`); // Debugging
+
+                rect(jump, stackedHeight, this.barWidth, firstHeight);
+                // rect(jump, stackedHeight, this.barWidth, firstHeight);
+
+                stackedHeight += firstHeight; // Putting the scecond bar on top of the first one.
         
-                // Draw Male (stacked on top)
-                fill(this.barColour);
-                rect(jump, femaleHeight, this.barWidth, maleHeight);
+                // Male (stacked on top)
+                let secondHeight = this.data[i]["Male"] * this.scaler;
+                fill(colors[1]); // Blue
+                rect(jump, stackedHeight, this.barWidth, secondHeight);
             }
         }
+        
 
-        else if (this.orientation === 'grouped') {
-            scale(1, -1);
-            translate(this.margin, 0);
+        // else if (this.orientation === 'grouped') {
+        //     scale(1, -1);
+        //     translate(this.margin, 0);
 
-            let numCategories = this.yValue.length; // Number of groups (e.g., Male, Female)
-            let totalGroupWidth = this.barWidth * numCategories + (this.gap * (numCategories - 1)); // Total width of one group
-            let colors = ["pink", "blue", "green", "orange"]; // Add more colors if needed
+        //     let numCategories = this.yValue.length; // Number of groups (e.g., Male, Female)
+        //     let totalGroupWidth = this.barWidth * numCategories + (this.gap * (numCategories - 1)); // Total width of one group
+        //     let colors = ["pink", "blue", "green", "orange"]; 
 
-            for (let i = 0; i < this.data.length; i++) {
-                let baseX = (totalGroupWidth + this.gap) * i; // Position for each group
+        //     for (let i = 0; i < this.data.length; i++) {
+        //         let baseX = (totalGroupWidth + this.gap) * i; // Position for each group
 
-                for (let j = 0; j < numCategories; j++) {
-                    let category = this.yValue[j];
-                    let value = this.data[i][category] * this.scaler;
+        //         for (let j = 0; j < numCategories; j++) {
+        //             let category = this.yValue[j];
+        //             let value = this.data[i][category] * this.scaler;
 
-                    let barX = baseX + (this.barWidth + this.gap) * j; // Offset bars in a group
+        //             let barX = baseX + (this.barWidth + this.gap) * j; // Offset bars in a group
 
-                    fill(colors[j % colors.length]); // Cycle through colors
-                    noStroke();
-                    rect(barX, 0, this.barWidth, value, 5, 5, 0, 0);
-                }
-            }
-        }
+        //             fill(colors[j % colors.length]); // Cycle through colors
+        //             noStroke();
+        //             rect(barX, 0, this.barWidth, value, 5, 5, 0, 0);
+        //         }
+        //     }
+        // } //For class tommorow
     pop();
     pop();
     }
@@ -124,7 +145,7 @@ renderBars() {
         stroke(this.axisColour);
         strokeWeight(this.axisThickness);
 
-        if (this.orientation === 'vertical') {
+        if (this.orientation === 'vertical' || this.orientation === 'stacked') {
             line(0, 0, 0, -this.chartHeight);
             line(0, 0, this.chartWidth, 0);
         } else if (this.orientation === 'horizontal') {
@@ -147,7 +168,7 @@ renderBars() {
             // textAlign(LEFT, CENTER);
             // textSize(10);
             push();
-            if (this.orientation === 'vertical') {
+            if (this.orientation === 'vertical' || this.orientation === 'stacked') {
                 translate(jump + (this.barWidth / 2), 10);
                 fill(this.axisTextColour);
                 textAlign(LEFT, CENTER);
@@ -184,16 +205,14 @@ renderBars() {
         textAlign(RIGHT, CENTER);
         textSize(12); // Size of text on y axis
 
-        if(this.orientation === 'vertical') {
+        if(this.orientation === 'vertical' || this.orientation === 'stacked') {
             for (let i = 0; i <= this.maxValue; i += stepSize) {
                 let yPos = -i * this.scaler;
 
-                // If i is not 0 then draw the line
-                if (i != 0) {
-                    stroke(this.axisTickColor);
-                    strokeWeight(1);
-                    line(0, yPos, -10, yPos);
-                }
+                stroke(this.axisTickColor);
+                strokeWeight(1);
+                line(0, yPos, -10, yPos);
+                
     
                 // Draw Y-axis numbers making sure they are all rounded to their nearest 10
                 noStroke();
@@ -229,7 +248,7 @@ renderBars() {
         let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Number of divisions
 
 
-        if(this.orientation === 'vertical') {
+        if(this.orientation === 'vertical' || this.orientation === 'stacked') {
             for (let i = 0; i <= this.maxValue; i += stepSize) {
                 let yPos = -i * this.scaler;
                 // Draw grid lines
