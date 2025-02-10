@@ -123,7 +123,8 @@ renderBars() {
                 rotate(45);
                 text(this.data[i][this.xValue], 0, 0);
             } else if (this.orientation === 'horizontal') {
-                translate(-this.margin -5, -jump + (this.barWidth / 2));
+                let jump = (this.barWidth + this.gap) * i;
+                translate(-this.margin -this.gap, -jump - this.margin -this.gap);
                 fill(this.axisTextColour);
                 textAlign(RIGHT, CENTER);
                 noStroke();
@@ -172,12 +173,12 @@ renderBars() {
                 if (i != 0) {
                     stroke(this.axisTickColor);
                     strokeWeight(1);
-                    line(xPos, 0, xPos, -10);
+                    line(xPos, 0, xPos, this.gap);
                 }
     
                 // Draw Y-axis numbers making sure they are all rounded to their nearest 10
                 noStroke();
-                text(i, xPos, 15); 
+                text(i, xPos + this.gap, 15); 
             }
         }
 
