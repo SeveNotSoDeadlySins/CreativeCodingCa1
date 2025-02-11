@@ -108,6 +108,27 @@ renderBars() {
                 rect(jump, stackedHeight, this.barWidth, secondHeight);
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////////////////////////// Line Chart ////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (this.orientation === 'line') {
+            scale(1, -1);
+            translate(this.margin,0)
+
+            for(let i =0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                let jump2 = (this.barWidth + this.gap)*(i+1);
+
+                let firstPoint = this.data[i][this.yValue] * this.scaler;
+                let secondPoint = this.data[i+1][this.yValue] * this.scaler;
+                stroke(this.barColour);
+                line(jump, firstPoint, jump2, secondPoint);
+                // console.log(`Index: ${i}, Female Value: ${this.data[i][this.yValue]}, Scaled Height: ${this.scaler} ${this.maxValue}`);  // Debugging
+
+            }
+
+        }
         
 
         // else if (this.orientation === 'grouped') {
