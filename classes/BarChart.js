@@ -1,16 +1,16 @@
 class BarChart {
-    constructor(_data, _xValue, _yValue, _tickNum, _chartHeight, _barWidth, _margin, _axisThickness, _chartPosX, _chartPosY ,_orientation) {
-        this.data = _data;
-        this.xValue = _xValue;
-        this.yValue = _yValue;
-        this.tickNum = _tickNum;
-        this.chartHeight = _chartHeight;
-        this.barWidth = _barWidth;
-        this.margin = _margin;
-        this.axisThickness = _axisThickness;
-        this.chartPosX = _chartPosX;
-        this.chartPosY = _chartPosY;
-        this.orientation = _orientation;
+    constructor(obj) {
+        this.data = obj.data; //All of the data that is taken from the CSV file
+        this.xValue = obj.xValue || "Age_Group";
+        this.yValue = obj.yValue; // What rows that selected for the Yaxis i.e Male, Female
+        this.tickNum = obj.tickNum || 5;
+        this.chartHeight = obj.chartHeight || 200;
+        this.barWidth = obj.barWidth || 15;
+        this.margin = obj.margin || 15;
+        this.axisThickness = obj.axisThickness || 1;
+        this.chartPosX = obj.chartPosX || 100;
+        this.chartPosY = obj.chartPosY || 350;
+        this.orientation = obj.orientation || "vertical";
 
         // Scalers for the y axis
         this.maxValue = ceil(max(this.data.map(row => row[this.yValue])) / 10) * 10; // Round up to nearest 10
@@ -28,6 +28,11 @@ class BarChart {
             this.maxValue = ceil(max(this.data.map(row => row[this.yValue] || 0)) / 10) * 10;
         }
 
+        if (this.orientation === "fullGraph") {
+            this.maxValue = ceil(max(this.data.map(row => (row["Female"] || 0) + (row["Male"] || 0))) / 10) * 10;
+        } else {
+            this.maxValue = ceil(max(this.data.map(row => row[this.yValue] || 0)) / 10) * 10;
+        }
         this.scaler = this.chartHeight / this.maxValue;
 
         this.axisColour = "black";
@@ -108,6 +113,56 @@ renderBars() {
                 rect(jump, stackedHeight, this.barWidth, secondHeight);
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////100% Chart //////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        else if (this.orientation === 'fullGraph') {
+            scale(1, -1);
+            translate(this.margin, 0);
+
+            let itemPercentage = 0;
+
+            for (let i = 0; i < this.data.length; i++) {
+                let jump = (this.barWidth + this.gap) * i;
+                let firstValue = this.data[i]["Female"];
+                let secondValue = this.data[i]["Male"];
+
+                let total = firstValue + secondValue;
+
+
+                let newScaler = this.scaler/100;
+                
+                let malepercent = (secondValue / total) * 100;
+                let femalepercent = (firstValue / total) * 100;
+
+
+                let femaleHeight = femalepercent * this.scaler;
+                let maleHeight = malepercent * this.scaler;
+
+                let test = total * this.scaler;
+
+
+                rect(jump , femaleHeight, this.barWidth, test);
+
+
+                translate(jump, 0 )
+
+                rect(0 , maleHeight, this.barWidth, test);
+
+
+
+                console.log(`Index: , Female Value: ${this.scaler}, newValue:  ${this.maxValue} test ${this.scaler}`);
+                console.log(malepercent)  // Debugging
+                console.log(maleHeight)  // Debugging
+                console.log(femalepercent)  // Debugging
+                console.log(femaleHeight)  // Debugging
+
+
+            }
+        }
+
+
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////// Line Chart ////////////////////////////////////////////////////////////////
