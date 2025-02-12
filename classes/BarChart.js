@@ -1,16 +1,16 @@
 class BarChart {
-    constructor(_data, _xValue, _yValue, _tickNum, _chartHeight, _barWidth, _margin, _axisThickness, _chartPosX, _chartPosY ,_orientation) {
-        this.data = _data;
-        this.xValue = _xValue;
-        this.yValue = _yValue;
-        this.tickNum = _tickNum;
-        this.chartHeight = _chartHeight;
-        this.barWidth = _barWidth;
-        this.margin = _margin;
-        this.axisThickness = _axisThickness;
-        this.chartPosX = _chartPosX;
-        this.chartPosY = _chartPosY;
-        this.orientation = _orientation;
+    constructor(obj) {
+        this.data = obj.data;
+        this.xValue = obj.xValue || "Age_Group";
+        this.yValue = obj.yValue || "Female";
+        this.tickNum = obj.tickNum || 5;
+        this.chartHeight = obj.chartHeight || 200;
+        this.barWidth = obj.barWidth || 15;
+        this.margin = obj.margin || 15;
+        this.axisThickness = obj.axisThickness || 1;
+        this.chartPosX = obj.chartPosX || 100;
+        this.chartPosY = obj.chartPosY || 350;
+        this.orientation = obj.orientation || "vertical";
 
         // Scalers for the y axis
         this.maxValue = ceil(max(this.data.map(row => row[this.yValue])) / 10) * 10; // Round up to nearest 10
@@ -108,6 +108,14 @@ renderBars() {
                 rect(jump, stackedHeight, this.barWidth, secondHeight);
             }
         }
+
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////100% Chart //////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////
         /////////////////////////// Line Chart ////////////////////////////////////////////////////////////////

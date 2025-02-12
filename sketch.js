@@ -18,7 +18,25 @@ function setup() {
     cleanData();
 
     // charts.push(new BarChart(cleanedData,"Age_Group", "Female",5,200,200,10,15,2,50,450));
-    charts.push(new BarChart(cleanedData,"Age_Group", "Male",6,200,15,15,5,100,250));
+
+
+    // BarChart1 = {
+    //     data: cleanedData,
+    //     xValue: "Age_Group",
+    //     yValue: "Male",
+    //     tickNum: 6,
+    //     chartHeight: 200,
+    //     barWidth: 15,
+    //     margin: 15,
+    //     axisThickness: 5,
+    //     chartPosX: 100,
+    //     chartPosY: 250,
+    //     orientation: "bar"
+    // }
+
+    // charts.push(new BarChart(BarChart1));
+
+
     // charts.push(new BarChart(cleanedData,"Age_Group", "Total",7,200,400,15,15,2,50,200));
 
     // femaleScores = cleanedData.map(row => row.Female)
@@ -185,7 +203,7 @@ function getSelectedValues() {
 
 
 function generateChart() {
-    const yAxisData =  getSelectedValues();
+    const yAxisData =  getSelectedValues(); //What data is selected
     const barWidth = parseInt(document.getElementById("barWidth").value);
     const margin = parseInt(document.getElementById("margin").value);
     const chartHeight = parseInt(document.getElementById("chartHeight").value);
@@ -207,21 +225,45 @@ function generateChart() {
 
     // Checking if theres more then 1 set of data selected and if it is over 1 it will make a Grouped bar chart
     if (Array.isArray(yAxisData) && yAxisData.length > 1 && chartOrientation === "bar") {
-        // Grouped bar chart
+        // Grouped bar chart not finished yet
         yAxisData.forEach((dataset, index) => {
             let xOffset = index * (barWidth + margin); // Offset bars so they don't overlap
-            let newChart = new BarChart(cleanedData, 'Age_Group', dataset, tickNum, chartHeight, barWidth, margin, axisThickness, XPos + xOffset, YPos, chartOrientation);
+            
+            let newChart = new BarChart({
+                data: cleanedData,
+                xValue: 'Age_Group',
+                yValue: dataset,
+                tickNum: tickNum,
+                chartHeight: chartHeight,
+                barWidth: barWidth,
+                margin: margin,
+                axisThickness: axisThickness,
+                chartPosX: XPos + xOffset,
+                chartPosY: YPos,
+                orientation: chartOrientation
+            });
+    
             charts.push(newChart);
         });
     } else {
-        // **Single dataset OR stacked bar chart**
-        const newChart = new BarChart(cleanedData, 'Age_Group', yAxisData, tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos, chartOrientation);
+        // Single dataset 
+        const newChart = new BarChart({
+            data: cleanedData,
+            xValue: 'Age_Group',
+            yValue: yAxisData,
+            tickNum: tickNum,
+            chartHeight: chartHeight,
+            barWidth: barWidth,
+            margin: margin,
+            axisThickness: axisThickness,
+            chartPosX: XPos,
+            chartPosY: YPos,
+            orientation: chartOrientation
+        });
+    
         charts.push(newChart);
     }
-
-    const newChart = new BarChart(cleanedData, 'Age_Group', yAxisData, tickNum, chartHeight, barWidth, margin, axisThickness, XPos, YPos,chartOrientation);
-
-    charts.push(newChart);
+    
 
     redraw()
 }
