@@ -1,16 +1,16 @@
-class BarChart {
-    constructor(_data, _xValue, _yValue, _tickNum, _chartHeight, _barWidth, _margin, _axisThickness, _chartPosX, _chartPosY ,_orientation) {
-        this.data = _data;
-        this.xValue = _xValue;
-        this.yValue = _yValue;
-        this.tickNum = _tickNum;
-        this.chartHeight = _chartHeight;
-        this.barWidth = _barWidth;
-        this.margin = _margin;
-        this.axisThickness = _axisThickness;
-        this.chartPosX = _chartPosX;
-        this.chartPosY = _chartPosY;
-        this.orientation = _orientation;
+class BarChartL {
+    constructor(obj){
+        this.data = obj.data;
+        this.xValue = obj.xValue;
+        this.yValue = obj.yValue;
+        this.tickNum = obj.tickNum;
+        this.chartHeight = obj.chartHeight || 300; //300 will be the default height.
+        this.barWidth = obj.barWidth || 300; // All of the "ORs" will be the defualt values.
+        this.margin = obj.margin || 10;
+        this.axisThickness = obj.axisThickness || 1;
+        this.chartPosX = obj.chartPosX || 200;
+        this.chartPosY = obj.chartPosY || 100;
+        this.orientation = obj.orientation || "vertical";
 
         // Scalers for the y axis
         this.maxValue = ceil(max(this.data.map(row => row[this.yValue])) / 10) * 10; // Round up to nearest 10

@@ -17,8 +17,24 @@ function setup() {
     noLoop();
     cleanData();
 
-    // charts.push(new BarChart(cleanedData,"Age_Group", "Female",5,200,200,10,15,2,50,450));
-    charts.push(new BarChart(cleanedData,"Age_Group", "Male",6,200,15,15,5,100,250));
+    // charts.push(new BarChart({
+    //     data:cleanedData,
+    //     XValue: "Age_Group",
+    //     yValue: "Female",
+    //     tickNum: 5,
+    //     chartHeight: 200,
+    //     barWidth: 200,
+    //     margin: 10,
+    //     axisThickness: 15,
+    //     chartPosX: 2,
+    //     chartPosY: 450,
+    //     orientation: "bar"
+    // }
+    // ));
+
+    // charts[0].render();
+
+
     // charts.push(new BarChart(cleanedData,"Age_Group", "Total",7,200,400,15,15,2,50,200));
 
     // femaleScores = cleanedData.map(row => row.Female)
@@ -183,7 +199,7 @@ function getSelectedValues() {
     return selectedValues;
 }
 
-
+// Uncomment later
 function generateChart() {
     const yAxisData =  getSelectedValues();
     const barWidth = parseInt(document.getElementById("barWidth").value);
