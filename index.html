@@ -5,7 +5,8 @@
 		<!-- https://commencement2017.risd.edu/#home -->
 		<script src="libraries/p5.min.js"></script>
 		<script src="classes/Friend.js"></script>
-		<script src="classes/BarChart.js"></script>
+		<script src="classes/Chart.js"></script>
+		<script src="classes/BarRenderer.js"></script>
 		<script src="sketch.js"></script>
 	</head>
 	<style>
@@ -32,10 +33,13 @@
 					<option value="vertical">Vertical Bar Chart</option>
 					<option value="horizontal">Horizontal Bar Chart</option>
 					<option value="stacked">Stacked Bar Chart</option>
-					<option value="grouped">Grouped Bar Chart</option>
 					<option value="line">Line Chart</option>
 					<option value="fullGraph">100% Graph</option>
 				</select><br><br>
+
+				<label>
+					<input type="checkbox" id="toggleOrientation" value="true" /> Toggle Horizontal/Vertical
+				</label><br><br>
 
 
 				<!-- <label for="YAxis">Y Axis Data: </label>
@@ -76,6 +80,10 @@
 				<label for="YPos">Y Position: </label>
 				<input type="number" id="YPos" placeholder="Enter value: (350 is default)"><br><br>
 			
+				<!-- <label for="colorpicker">Bar Color:</label>
+   				<input type="color" id="barcolour" value="#0000ff"> -->
+
+
 				<button type="button" onclick="generateChart()">Generate Chart</button><br><br>
 			</form>
 		</div>

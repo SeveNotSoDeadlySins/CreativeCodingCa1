@@ -2,7 +2,6 @@ let table;
 let cleanedData = [];
 
 let charts = [];
-
 let femaleScores;
 let ageGroups;
 let barColour;
@@ -10,12 +9,15 @@ function preload() {
     data = loadTable('data/Combined.csv', 'csv' , 'header');
 }
 
+
+
 // Only runs once.
 function setup() {
-    createCanvas(500, 500);
+    createCanvas(800, 600);
     angleMode(DEGREES);
     noLoop();
     cleanData();
+
 
     // charts.push(new BarChart({
     //     data:cleanedData,
@@ -62,8 +64,8 @@ function draw() {
         chart.renderLabels();
         chart.renderTicks();
         chart.renderTickLines();
-        chart.renderBars();
-        chart.renderAxis();
+        // chart.renderBars();
+        chart.render();
 
     }) 
     // If i change the name of "renderBars" i have to change it here
@@ -187,21 +189,52 @@ function cleanData() {
     for(let i = 0; i < data.rows.length; i++) {
         let cleanerData =(data.rows[i].obj)
         cleanedData.push(cleanerData);
-        cleanedData[i].Female = parseInt(cleanedData[i].Female)
-        cleanedData[i].Male = parseInt(cleanedData[i].Male)
-        cleanedData[i].Total = parseInt(cleanedData[i].Total)
+        cleanedData[i].Female = parseInt(cleanedData[i].Female) || 0;
+        cleanedData[i].Male = parseInt(cleanedData[i].Male) || 0;
+        cleanedData[i].Total = parseInt(cleanedData[i].Total)   || 0;
     } 
 }
 
 function getSelectedValues() {
-    // Get all checked checkboxes for 'YAxis'
-    const selectedValues = Array.from(document.querySelectorAll('input[name="YAxis"]:checked')).map(checkbox => checkbox.value); // Get the value of each checked checkbox
+    // Step 1: Select all checked checkboxes with the name 'YAxis'
+    const selectedValues = Array.from( // Array is a built in javascript object that provides methods to work with arrays
+        document.querySelectorAll('input[name="YAxis"]:checked') // checking what i wanna put on the Y axis
+    )
+    // Step 2: Map the NodeList of checkboxes to an array of their 'value' attributes
+    // Nodelist is a array like collection of Docutment object model nodes It represents a list of elements (or other node types) in the document, allowing you to access and interact with multiple DOM nodes at once.
+    .map(checkbox => checkbox.value);
+
+    // Step 3: Check if no checkboxes were selected
+    if (selectedValues.length === 0) {
+        console.warn("No datasets selected for Y-Axis. Defaulting to a placeholder value.");
+    } else {
+        // Step 4: Log the selected values for debugging purposes
+        console.log("Selected Y-Axis Values:", selectedValues);
+    }
+
+    // Step 5: Return the array of selected values
     return selectedValues;
 }
 
-// Uncomment later
+let chartOrientation = "vertical"; // Initial orientation
+
+// This function will toggle the orientation when the checkbox is clicked
+// function toggleOrientation() {
+//     // Check if the checkbox for horizontal orientation is checked
+//     const isHorizontal = document.getElementById("toggleOrientation").checked;
+
+//     // Set the chart orientation based on checkbox state
+//     chartOrientation = isHorizontal ? "horizontal" : "vertical"; 
+//     console.log("Orientation toggled to:", chartOrientation); // For debugging
+// }
+
+// // Attach event listener once when the page loads (only adds once)
+// const toggleButton = document.getElementById("toggleOrientation");
+// toggleButton.addEventListener("change", toggleOrientation);  // Change to 'change' event for checkbox state
+
+
 function generateChart() {
-    const yAxisData =  getSelectedValues(); //What data is selected
+    const yAxisData = getSelectedValues(); // What data is selected
     const barWidth = parseInt(document.getElementById("barWidth").value);
     const margin = parseInt(document.getElementById("margin").value);
     const chartHeight = parseInt(document.getElementById("chartHeight").value);
@@ -209,59 +242,35 @@ function generateChart() {
     const tickNum = parseInt(document.getElementById("tickNum").value);
     const XPos = parseInt(document.getElementById("XPos").value);
     const YPos = parseInt(document.getElementById("YPos").value);
-    const chartOrientation = document.getElementById("chartOrientation").value;
+    const isChecked = document.getElementById("toggleOrientation").checked;
 
+    // Validation for stacked charts
     if (Array.isArray(yAxisData) && yAxisData.length === 1 && chartOrientation === 'stacked') {
         alert("Error: A stacked bar chart requires at least two datasets.");
         console.log("Error: A stacked bar chart requires at least two datasets.");
-        return; 
+        return;
     }
 
-    clear();
+    // Clear the canvas before rendering a new chart
+    clear(); 
+    charts = []; // Reset the chart array to avoid overlaying old charts
 
-    charts = []; //If i wasnt more then 1 chart get rid of this line.
+    // Create a new chart instance with the updated orientation
+    const newChart = new Chart({
+        data: cleanedData,
+        xValue: 'Age_Group',
+        yValue: yAxisData,
+        tickNum: tickNum,
+        chartHeight: chartHeight,
+        barWidth: barWidth,
+        margin: margin,
+        axisThickness: axisThickness,
+        chartPosX: XPos,
+        chartPosY: YPos,
+        orientation: chartOrientation, // Use the updated orientation here
+        isChecked: isChecked
+    });
 
-    // Checking if theres more then 1 set of data selected and if it is over 1 it will make a Grouped bar chart
-    if (Array.isArray(yAxisData) && yAxisData.length > 1 && chartOrientation === "bar") {
-        // Grouped bar chart not finished yet
-        yAxisData.forEach((dataset, index) => {
-            let xOffset = index * (barWidth + margin); // Offset bars so they don't overlap
-            
-            let newChart = new BarChart({
-                data: cleanedData,
-                xValue: 'Age_Group',
-                yValue: dataset,
-                tickNum: tickNum,
-                chartHeight: chartHeight,
-                barWidth: barWidth,
-                margin: margin,
-                axisThickness: axisThickness,
-                chartPosX: XPos + xOffset,
-                chartPosY: YPos,
-                orientation: chartOrientation
-            });
-    
-            charts.push(newChart);
-        });
-    } else {
-        // Single dataset 
-        const newChart = new BarChart({
-            data: cleanedData,
-            xValue: 'Age_Group',
-            yValue: yAxisData,
-            tickNum: tickNum,
-            chartHeight: chartHeight,
-            barWidth: barWidth,
-            margin: margin,
-            axisThickness: axisThickness,
-            chartPosX: XPos,
-            chartPosY: YPos,
-            orientation: chartOrientation
-        });
-    
-        charts.push(newChart);
-    }
-    
-
-    redraw()
+    charts.push(newChart); // Add the new chart to the array
+    redraw(); // Re-render the chart with the updated orientation
 }
