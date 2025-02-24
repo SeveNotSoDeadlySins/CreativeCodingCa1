@@ -6,7 +6,12 @@
 		<script src="libraries/p5.min.js"></script>
 		<script src="classes/Friend.js"></script>
 		<script src="classes/Chart.js"></script>
-		<script src="classes/BarRenderer.js"></script>
+		<script src="classes/BarRender.js"></script>
+		<script src="classes/AxisRender.js"></script>
+		<script src="classes/LabelRender.js"></script>
+		<script src="classes/LineRender.js"></script>
+		<script src="classes/TickRender.js"></script>
+		<script src="classes/LegendRender.js"></script>
 		<script src="sketch.js"></script>
 	</head>
 	<style>
@@ -31,7 +36,6 @@
 				<label for="chartOrientation">Chart Orientation: </label>
 				<select id="chartOrientation">
 					<option value="vertical">Vertical Bar Chart</option>
-					<option value="horizontal">Horizontal Bar Chart</option>
 					<option value="stacked">Stacked Bar Chart</option>
 					<option value="line">Line Chart</option>
 					<option value="fullGraph">100% Graph</option>
@@ -72,10 +76,10 @@
 				<input type="number" id="axisThickness" placeholder="Enter value: (1 is default)"><br><br>
 			
 				<label for="tickNum">Tick Number: </label>
-				<input type="number" id="tickNum"placeholder="Enter value: (5 is default)"><br><br>
+				<input type="number" id="tickNum"placeholder="Enter value: (8 is default)"><br><br>
 			
 				<label for="XPos">X Position: </label>
-				<input type="number" id="XPos" placeholder="Enter value: (100 is default)"><br><br>
+				<input type="number" id="XPos" placeholder="Enter value: (200 is default)"><br><br>
 			
 				<label for="YPos">Y Position: </label>
 				<input type="number" id="YPos" placeholder="Enter value: (350 is default)"><br><br>

@@ -61,8 +61,6 @@ function draw() {
 
     charts.forEach(chart => {
         chart.setColors();
-        chart.renderLabels();
-        chart.renderTicks();
         chart.renderTickLines();
         // chart.renderBars();
         chart.render();
@@ -234,7 +232,8 @@ let chartOrientation = "vertical"; // Initial orientation
 
 
 function generateChart() {
-    const yAxisData = getSelectedValues(); // What data is selected
+    const yAxisData = getSelectedValues();
+
     const barWidth = parseInt(document.getElementById("barWidth").value);
     const margin = parseInt(document.getElementById("margin").value);
     const chartHeight = parseInt(document.getElementById("chartHeight").value);
@@ -249,6 +248,12 @@ function generateChart() {
         alert("Error: A stacked bar chart requires at least two datasets.");
         console.log("Error: A stacked bar chart requires at least two datasets.");
         return;
+    }
+
+    let orientation = chartOrientation; // Initial orientation
+    if(chartOrientation === 'vertical' && yAxisData.length > 1) {
+        orientation = 'cluster';
+        console.log("Orientation changed to:", orientation);
     }
 
     // Clear the canvas before rendering a new chart
@@ -267,9 +272,12 @@ function generateChart() {
         axisThickness: axisThickness,
         chartPosX: XPos,
         chartPosY: YPos,
-        orientation: chartOrientation, // Use the updated orientation here
+        orientation: orientation, // Use the updated orientation here
         isChecked: isChecked
     });
+
+    console.log("Creating new chart with orientation:dafgreagadfgerg", orientation);
+
 
     charts.push(newChart); // Add the new chart to the array
     redraw(); // Re-render the chart with the updated orientation

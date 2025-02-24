@@ -3,15 +3,18 @@ class Chart {
         this.data = obj.data; //All of the data that is taken from the CSV file
         this.xValue = obj.xValue || "Age_Group";
         this.yValue = obj.yValue || "Female"; // What rows that selected for the Yaxis i.e Male, Female
-        this.tickNum = obj.tickNum || 7;
+        this.tickNum = obj.tickNum || 8;
         this.chartHeight = obj.chartHeight || 200;
         this.barWidth = obj.barWidth || 15;
         this.margin = obj.margin || 15;
         this.axisThickness = obj.axisThickness || 1;
-        this.chartPosX = obj.chartPosX || 100;
+        this.chartPosX = obj.chartPosX || 200;
         this.chartPosY = obj.chartPosY || 350;
         this.orientation = obj.orientation || "vertical";
         this.isChecked = obj.isChecked || false;
+
+        console.log("Constructor set orientation to:", this.orientation);
+
 
         // Scalers for the y axis
         this.maxValue = ceil(max(this.data.map(row => row[this.yValue])) / 10) * 10; // Round up to nearest 10
@@ -23,18 +26,36 @@ class Chart {
         this.chartWidth = (this.data.length * this.barWidth) + ((this.data.length - 1) * this.gap) + (this.margin * 2);
 
 
-        if (this.orientation === "stacked") {
-            this.maxValue = ceil(max(this.data.map(row => (row["Female"] || 0) + (row["Male"] || 0))) / 10) * 10;
+        // Calculate the max value considering all selected datasets
+        if (this.orientation === "stacked" || this.orientation === "fullGraph") {
+            // For stacked or cluster, add up the values from all selected datasets
+            this.maxValue = ceil(
+                max(this.data.map(row => {
+                    // Sum values from all datasets in this row (considering `this.yValue` as the array of selected datasets)
+                    let sum = 0;
+                    this.yValue.forEach(dataset => {
+                        sum += row[dataset] || 0; // Add value for each selected dataset (use 0 if not present)
+                    });
+                    return sum;
+                })) / 10
+            ) * 10; // Round up to the nearest multiple of 10
+        } else if (this.orientation === "cluster") {
+            // Find the max value from all selected datasets
+            const maxValues = this.yValue.map(yValue => {
+                return max(this.data.map(row => row[yValue] || 0));
+            });
+
+            this.maxValue = ceil(max(maxValues) / 10) * 10;
         } else {
-            this.maxValue = ceil(max(this.data.map(row => row[this.yValue] || 0)) / 10) * 10;
+            // For other chart types (e.g., vertical, line), take the max of the selected Y-value column
+            this.maxValue = ceil(
+                max(this.data.map(row => row[this.yValue] || 0)) / 10
+            ) * 10; // Round up to the nearest multiple of 10
         }
 
-        if (this.orientation === "fullGraph") {
-            this.maxValue = ceil(max(this.data.map(row => (row["Female"] || 0) + (row["Male"] || 0))) / 10) * 10;
-        } else {
-            this.maxValue = ceil(max(this.data.map(row => row[this.yValue] || 0)) / 10) * 10;
-        }
+        // Calculate the scaler to fit the chart height
         this.scaler = this.chartHeight / this.maxValue;
+
 
 
         // const toggleButton = document.getElementById("toggleOrientation");
@@ -46,20 +67,50 @@ class Chart {
         this.axisTickTextColour = "black";
         this.axisTickColor = "black";
         this.chartTickLinesColor = "black";
+        this.barColours = ["#FF5733", "#33FF57", "#3357FF", "#F0E68C"]; // Example color set
+
+
     }
 
     render() {
-        BarRenderer.renderBars();
-        console.log("Rendering chart");
-        this.axisRenderer.renderAxes();
-        this.labelRenderer.renderLabels();
+        const barRender = new BarRender(this);  // Pass the current chart instance to BarRender
+        barRender.renderBars();  // Call renderBars on the instance
+
+        console.log("Rendering Bars");
+
+        const axisRender = new AxisRender(this);
+        axisRender.renderAxis();
+
+        console.log("Rendering Axis");
+
+        const tickRender = new TickRender(this);
+        tickRender.renderTick();
+
+        console.log("Rendering Tick");
+
+        const labelRender = new LabelRender(this);
+        labelRender.renderLabels();
+
+        console.log("Rendering Labels");
+
+
+        const lineRender = new LineRender(this);
+        lineRender.renderLabels();
+
+        console.log("Rendering Labels");
+
+
+        const legendRender = new LegendRender(this);
+        legendRender.renderLegends();
+
+        console.log("Rendering Legends");
+
+
+        // this.axisRenderer.renderAxes();
+        // this.labelRenderer.renderLabels();
     }
 
 
-    renderVerticalGraph() {
-        this.renderVerticalBars();
-        this.renderVerticalAxis();
-    }
 
     // toggleOrientation() {
     //     // Switch the orientation
@@ -307,17 +358,17 @@ class Chart {
     //     }
 
 
-    renderVerticalAxis() {
-        push();
-        translate(this.chartPosX, this.chartPosY);
-        noFill();
-        stroke(this.axisColour);
-        strokeWeight(this.axisThickness);
-        line(0, 0, 0, -this.chartHeight);
-        line(0, 0, this.chartWidth, 0);
-        pop();
-        console.log("Rendering vertical axis");
-    }
+    // renderVerticalAxis() {
+    //     push();
+    //     translate(this.chartPosX, this.chartPosY);
+    //     noFill();
+    //     stroke(this.axisColour);
+    //     strokeWeight(this.axisThickness);
+    //     line(0, 0, 0, -this.chartHeight);
+    //     line(0, 0, this.chartWidth, 0);
+    //     pop();
+    //     console.log("Rendering vertical axis");
+    // }
 
     // renderAxis() {
     //     push();
@@ -336,90 +387,90 @@ class Chart {
     //     pop();
     // }
 
-    renderLabels() {
-        push();
-        translate(this.chartPosX, this.chartPosY);
-        push();
-        translate(this.margin, 0);
-        for (let i = 0; i < this.data.length; i++) {
-            let jump = (this.barWidth + this.gap) * i;
+    // renderLabels() {
+    //     push();
+    //     translate(this.chartPosX, this.chartPosY);
+    //     push();
+    //     translate(this.margin, 0);
+    //     for (let i = 0; i < this.data.length; i++) {
+    //         let jump = (this.barWidth + this.gap) * i;
 
-            // X-axis labels
-            // fill(this.axisTextColour);
-            // textAlign(LEFT, CENTER);
-            // textSize(10);
-            push();
-            if (this.orientation === 'vertical' || this.orientation === 'stacked'|| this.orientation === 'line') {
-                translate(jump + (this.barWidth / 2), 10);
-                fill(this.axisTextColour);
-                textAlign(LEFT, CENTER);
-                noStroke();
+    //         // X-axis labels
+    //         // fill(this.axisTextColour);
+    //         // textAlign(LEFT, CENTER);
+    //         // textSize(10);
+    //         push();
+    //         if (this.orientation === 'vertical' || this.orientation === 'stacked'|| this.orientation === 'line') {
+    //             translate(jump + (this.barWidth / 2), 10);
+    //             fill(this.axisTextColour);
+    //             textAlign(LEFT, CENTER);
+    //             noStroke();
 
-                textSize(10);
-                rotate(45);
-                text(this.data[i][this.xValue], 0, 0);
-            } else if (this.orientation === 'horizontal') {
-                let jump = (this.barWidth + this.gap) * i;
-                translate(-this.margin -this.gap, -jump - this.margin -this.gap);
-                fill(this.axisTextColour);
-                textAlign(RIGHT, CENTER);
-                noStroke();
-                textSize(10);
-                rotate(0);
-                text(this.data[i][this.xValue], 0, 0);
-            }
-            pop();
-        }
-        pop();
-        pop();
-    }
+    //             textSize(10);
+    //             rotate(45);
+    //             text(this.data[i][this.xValue], 0, 0);
+    //         } else if (this.orientation === 'horizontal') {
+    //             let jump = (this.barWidth + this.gap) * i;
+    //             translate(-this.margin -this.gap, -jump - this.margin -this.gap);
+    //             fill(this.axisTextColour);
+    //             textAlign(RIGHT, CENTER);
+    //             noStroke();
+    //             textSize(10);
+    //             rotate(0);
+    //             text(this.data[i][this.xValue], 0, 0);
+    //         }
+    //         pop();
+    //     }
+    //     pop();
+    //     pop();
+    // }
 
-    renderTicks() {
-        push();
-        translate(this.chartPosX, this.chartPosY);
-        noFill();
+    // renderTicks() {
+    //     push();
+    //     translate(this.chartPosX, this.chartPosY);
+    //     noFill();
 
-        let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Always use increments of 50 for the y axis
+    //     let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Always use increments of 50 for the y axis
 
-        // Changing the look of the y axis.
-        fill(this.axisTickTextColour);
-        textAlign(RIGHT, CENTER);
-        textSize(12); // Size of text on y axis
+    //     // Changing the look of the y axis.
+    //     fill(this.axisTickTextColour);
+    //     textAlign(RIGHT, CENTER);
+    //     textSize(12); // Size of text on y axis
 
-        if(this.orientation === 'vertical' || this.orientation === 'stacked') {
-            for (let i = 0; i <= this.maxValue; i += stepSize) {
-                let yPos = -i * this.scaler;
+    //     if(this.orientation === 'vertical' || this.orientation === 'stacked') {
+    //         for (let i = 0; i <= this.maxValue; i += stepSize) {
+    //             let yPos = -i * this.scaler;
 
-                stroke(this.axisTickColor);
-                strokeWeight(1);
-                line(0, yPos, -10, yPos);
+    //             stroke(this.axisTickColor);
+    //             strokeWeight(1);
+    //             line(0, yPos, -10, yPos);
                 
     
-                // Draw Y-axis numbers making sure they are all rounded to their nearest 10
-                noStroke();
-                text(i, -15, yPos); 
-            }
-        } else if(this.orientation === 'horizontal') {
-            let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Always use increments of 50 for the y axis
-            for(let i = 0; i <= this.maxValue; i += stepSize) {
-                let xPos = i * this.scaler;
+    //             // Draw Y-axis numbers making sure they are all rounded to their nearest 10
+    //             noStroke();
+    //             text(i, -15, yPos); 
+    //         }
+    //     } else if(this.orientation === 'horizontal') {
+    //         let stepSize = ceil((this.maxValue / this.tickNum) / 50) * 50; // Always use increments of 50 for the y axis
+    //         for(let i = 0; i <= this.maxValue; i += stepSize) {
+    //             let xPos = i * this.scaler;
 
-                if (i != 0) {
-                    stroke(this.axisTickColor);
-                    strokeWeight(1);
-                    line(xPos, 0, xPos, this.gap);
-                }
+    //             if (i != 0) {
+    //                 stroke(this.axisTickColor);
+    //                 strokeWeight(1);
+    //                 line(xPos, 0, xPos, this.gap);
+    //             }
     
-                // Draw Y-axis numbers making sure they are all rounded to their nearest 10
-                noStroke();
-                text(i, xPos + this.gap, 15); 
-            }
-        }
+    //             // Draw Y-axis numbers making sure they are all rounded to their nearest 10
+    //             noStroke();
+    //             text(i, xPos + this.gap, 15); 
+    //         }
+    //     }
 
-        // Looking to display the numbers and the lines on the y axis.
+    //     // Looking to display the numbers and the lines on the y axis.
         
-        pop();
-    }
+    //     pop();
+    // }
 
     renderTickLines() {
         push();
