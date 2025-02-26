@@ -27,9 +27,6 @@ class LineRender extends Chart{
             case 'cluster':
                 this.renderClusteredLines();
                 break;
-            case 'fullGraph':
-                this.renderFullGraphLabel();
-                break;
             case 'line':
                 this.renderLineChart();
                 break;

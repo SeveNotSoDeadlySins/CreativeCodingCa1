@@ -14,9 +14,9 @@ class LegendRender extends Chart{
 
         // Otherwise, use the default orientation logic
         switch (this.orientation) {
-            case 'stacked':
-                this.renderStackedLegend();
-                break;
+            // case 'stacked':
+            //     this.renderStackedLegend();
+            //     break;
             case 'cluster':
                 this.renderClusteredLegend();
                 break;
@@ -126,6 +126,7 @@ class LegendRender extends Chart{
         pop(); // End the chart position transformation context
     }
     
-    
-    
+    renderFullGraphLegend() {
+        console.log("Legend")
+    }
 }

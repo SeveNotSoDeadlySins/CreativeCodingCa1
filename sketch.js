@@ -1,22 +1,28 @@
 let table;
 let cleanedData = [];
+let flattenedData = [];
 
 let charts = [];
 let femaleScores;
 let ageGroups;
 let barColour;
+
+
+
 function preload() {
-    data = loadTable('data/Combined.csv', 'csv' , 'header');
+    data = loadTable('data/GDP_Country.csv', 'csv' , 'header');
+    console.log(data); // Check that the table is loaded and has rows
+
 }
 
 
 
 // Only runs once.
 function setup() {
-    createCanvas(800, 600);
+    createCanvas(5000, 2000);
     angleMode(DEGREES);
     noLoop();
-    cleanData();
+    flattenedData = cleanData();
 
 
     // charts.push(new BarChart({
@@ -183,15 +189,108 @@ function draw() {
 
 // console.log(friends)
 
+////////////////////////////// OG CLEANED DATA FUNCTION ////////////////////////////////
+// function cleanData() {
+//     for(let i = 0; i < data.rows.length; i++) {
+//         let cleanerData =(data.rows[i].obj)
+//         cleanedData.push(cleanerData);
+//         cleanedData[i].Female = parseInt(cleanedData[i].Female) || 0;
+//         cleanedData[i].Male = parseInt(cleanedData[i].Male) || 0;
+//         cleanedData[i].Total = parseInt(cleanedData[i].Total)   || 0;
+//     } 
+
+//     console.log("Final Cleaned Data:", cleanedData);
+// }
+
 function cleanData() {
-    for(let i = 0; i < data.rows.length; i++) {
-        let cleanerData =(data.rows[i].obj)
-        cleanedData.push(cleanerData);
-        cleanedData[i].Female = parseInt(cleanedData[i].Female) || 0;
-        cleanedData[i].Male = parseInt(cleanedData[i].Male) || 0;
-        cleanedData[i].Total = parseInt(cleanedData[i].Total)   || 0;
-    } 
+    let cleanedData = {}; // Object to store data by region
+  
+    // Loop through each row in the table
+    for (let i = 0; i < data.getRowCount(); i++) {
+      let row = data.getRow(i); // Get the current row
+      let country = row.get('Country');    // Use get() method to access the column value
+      let region = row.get('Region');
+      let population = parseInt(row.get('Population')) || 0;
+  
+      // Ensure region exists and trim extra spaces
+      if (region && region.trim()) {
+        region = region.trim();
+        country = country.trim();
+  
+        // Add the country data under its region
+        if (cleanedData[region]) {
+          cleanedData[region].push({ country, population, region });
+        } else {
+          cleanedData[region] = [{ country, population, region }];
+        }
+      } else {
+        console.warn(`Region missing or invalid at row ${i}`);
+      }
+    }
+  
+    // Flatten the cleaned data into an array
+    let flattened = flattenData(cleanedData);
+    console.log("Flattened Data:", flattened);
+    return flattened;
+  }
+  
+
+// Function to flatten the cleaned data
+function flattenData(cleanedData) {
+    let flattenedData = [];
+    for (let region in cleanedData) {
+      if (cleanedData.hasOwnProperty(region)) {
+        cleanedData[region].forEach(countryData => {
+          flattenedData.push(countryData);
+        });
+      }
+    }
+    return flattenedData;
 }
+  
+
+function filterDataAndGenerateChart() {
+  // 1) Read the selected orientation
+  const orientationEl = document.getElementById("chartOrientation");
+  const selectedValue = orientationEl.value;
+  console.log("Selected orientation:", selectedValue);
+
+  // 2) Get the region checkboxes
+  const selectedRegions = Array.from(
+    document.querySelectorAll('input[name="regionSelect"]:checked')
+  ).map(checkbox => checkbox.value);
+
+  if (selectedRegions.length === 0) {
+    console.warn("No regions selected. Please select at least one region.");
+    return;
+  }
+
+  // 3) Filter the global flattenedData by region
+  let filteredData = flattenedData.filter(item =>
+    selectedRegions.includes(item.region)
+  );
+  console.log("Filtered Data by Region:", filteredData);
+
+  // 4) Generate the chart
+  generateChart(filteredData, selectedValue);
+}
+
+
+function formatPopulation(num) {
+  if (num >= 1e9) {
+    return (num / 1e9).toFixed(1) + "B";
+  } else if (num >= 1e6) {
+    let millions = (num / 1e6).toFixed(1);
+    return (num > 70e6 ? millions + "M+" : millions + "M");
+  } else if (num >= 1e3) {
+    return (num / 1e3).toFixed(1) + "K";
+  } else {
+    return num.toString();
+  }
+}
+  
+  
+
 
 function getSelectedValues() {
     // Step 1: Select all checked checkboxes with the name 'YAxis'
@@ -210,28 +309,17 @@ function getSelectedValues() {
         console.log("Selected Y-Axis Values:", selectedValues);
     }
 
+    console.log("Selected Y-Axis Values:", selectedValues);
+
     // Step 5: Return the array of selected values
     return selectedValues;
 }
 
-let chartOrientation = "vertical"; // Initial orientation
-
-// This function will toggle the orientation when the checkbox is clicked
-// function toggleOrientation() {
-//     // Check if the checkbox for horizontal orientation is checked
-//     const isHorizontal = document.getElementById("toggleOrientation").checked;
-
-//     // Set the chart orientation based on checkbox state
-//     chartOrientation = isHorizontal ? "horizontal" : "vertical"; 
-//     console.log("Orientation toggled to:", chartOrientation); // For debugging
-// }
-
-// // Attach event listener once when the page loads (only adds once)
-// const toggleButton = document.getElementById("toggleOrientation");
-// toggleButton.addEventListener("change", toggleOrientation);  // Change to 'change' event for checkbox state
 
 
-function generateChart() {
+
+
+function generateChart(regionData ,orientation) {
     const yAxisData = getSelectedValues();
 
     const barWidth = parseInt(document.getElementById("barWidth").value);
@@ -250,8 +338,7 @@ function generateChart() {
         return;
     }
 
-    let orientation = chartOrientation; // Initial orientation
-    if(chartOrientation === 'vertical' && yAxisData.length > 1) {
+    if (orientation === 'vertical' && yAxisData.length > 1) {
         orientation = 'cluster';
         console.log("Orientation changed to:", orientation);
     }
@@ -260,11 +347,18 @@ function generateChart() {
     clear(); 
     charts = []; // Reset the chart array to avoid overlaying old charts
 
+    // Extract country names and populations from the region data
+    const countries = regionData.map(item => item.country);        
+    const populations = regionData.map(item => parseInt(item.population)); 
+
+    console.log("Countries:", countries);
+    console.log("Populations:", populations);
+
     // Create a new chart instance with the updated orientation
     const newChart = new Chart({
-        data: cleanedData,
-        xValue: 'Age_Group',
-        yValue: yAxisData,
+        data: regionData, // this is my new name for cleaned data after it is filtered.
+        xValue: 'country',
+        yValue: 'population',
         tickNum: tickNum,
         chartHeight: chartHeight,
         barWidth: barWidth,
@@ -272,13 +366,13 @@ function generateChart() {
         axisThickness: axisThickness,
         chartPosX: XPos,
         chartPosY: YPos,
-        orientation: orientation, // Use the updated orientation here
+        orientation: orientation,
         isChecked: isChecked
     });
 
-    console.log("Creating new chart with orientation:dafgreagadfgerg", orientation);
-
+    console.log("Creating new chart with orientation:", orientation);
 
     charts.push(newChart); // Add the new chart to the array
     redraw(); // Re-render the chart with the updated orientation
 }
+

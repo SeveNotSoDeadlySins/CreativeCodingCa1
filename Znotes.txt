@@ -118,3 +118,93 @@ Start with the root rectangle.
 Split the root rectangle based on the values of the countries.
 For each sub-rectangle (a country), divide it again based on its children (if you have a multi-level hierarchy).
 Repeat the process until all data is represented.
+
+
+
+    // sliceAndDiceTreemap(data, x, y, w, h, rectangles) {
+    //     // Base case: if no data left, just return
+    //     if (data.length === 0) return;
+      
+    //     // If there's only 1 item, fill the entire region
+    //     if (data.length === 1) {
+    //       rectangles.push({
+    //         x, y, w, h,
+    //         country: data[0].country,
+    //         population: data[0].population
+    //       });
+    //       return;
+    //     }
+      
+    //     // Calculate the total area (in pixels) of this treemap region
+    //     // and total population of the data slice
+    //     let totalPop = data.reduce((sum, d) => sum + d.population, 0);
+    //     let totalArea = w * h;
+    //     // Each "1 population unit" corresponds to this many pixels
+    //     let scale = totalArea / totalPop;
+      
+    //     // We'll build rows from top to bottom
+    //     let currentRow = [];
+    //     let currentRowSum = 0;
+      
+    //     let remaining = data.slice(); // Copy so we can pop from it
+      
+    //     // Start placing rows
+    //     let currentY = y;
+    //     let remainingHeight = h;
+      
+    //     while (remaining.length > 0) {
+    //       // Start a new row with the first item
+    //       currentRow = [remaining.shift()];
+    //       currentRowSum = currentRow[0].population;
+      
+    //       // Keep adding items to the row while it doesn't get "too skinny"
+    //       let done = false;
+    //       while (!done && remaining.length > 0) {
+    //         // Check if adding the next item would make the row aspect ratio worse
+    //         let nextItem = remaining[0];
+    //         let testRow = currentRow.concat([nextItem]);
+    //         let testSum = currentRowSum + nextItem.population;
+      
+    //         // If the aspect ratio gets worse, stop. Otherwise, add the item to the row.
+    //         if (this.worseAspectRatio(currentRow, currentRowSum, testRow, testSum, w, scale)) {
+    //           done = true; 
+    //         } else {
+    //           // Accept the next item
+    //           currentRow.push(nextItem);
+    //           currentRowSum = testSum;
+    //           remaining.shift();
+    //         }
+    //       }
+      
+    //       // Now we have our row. Compute the row height:
+    //       // rowArea = (currentRowSum * scale) in pixels
+    //       // rowHeight = rowArea / total width
+    //       let rowArea = currentRowSum * scale;
+    //       let rowHeight = rowArea / w;
+      
+    //       // Place each item in this row
+    //       let currentX = x;
+    //       for (let item of currentRow) {
+    //         let itemArea = item.population * scale;
+    //         let itemWidth = itemArea / rowHeight; // width = area / height
+      
+    //         rectangles.push({
+    //           x: currentX,
+    //           y: currentY,
+    //           w: itemWidth,
+    //           h: rowHeight,
+    //           country: item.country,
+    //           population: item.population
+    //         });
+      
+    //         currentX += itemWidth;
+    //       }
+      
+    //       // Move down for the next row
+    //       currentY += rowHeight;
+    //       remainingHeight -= rowHeight;
+      
+    //       // If there's no space left, stop
+    //       if (remainingHeight <= 0) break;
+    //     }
+    // } Single Strip 

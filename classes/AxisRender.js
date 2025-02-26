@@ -21,14 +21,14 @@ class AxisRender extends Chart{
             case 'vertical':
                 this.renderVerticalAxis();
                 break;
-            case 'stacked':
-                this.renderStackedAxis();
-                break;
+            // case 'stacked':
+            //     this.stackedRenderAxis();
+            //     break;
             case 'cluster':
                 this.renderClustedAxis();
                 break;
             case 'fullGraph':
-                this.renderFullGraphAxis();
+                this.drawAxes();
                 break;
             case 'line':
                 this.renderLineChart();
@@ -85,6 +85,40 @@ class AxisRender extends Chart{
     
         pop();
         console.log("Rendering renderClustedAxis axis with dynamic chart width:", this.chartWidth);
+    }
+
+    renderStackedAxis() {
+        let maxVal = this.chart.MaxValue; // the maximum region total
+        let tickSpacing = this.chart.chartHeight / numTicks;
+        
+        push();
+        stroke(0);
+        for (let i = 0; i <= numTicks; i++) {
+          let yPos = this.chart.chartPosY + this.chart.chartHeight - i * tickSpacing;
+          line(this.chart.chartPosX - 5, yPos, this.chart.chartPosX, yPos);
+          
+          // Compute tick value: For a stacked chart, tick value = (maxVal/numTicks)*i.
+          let tickVal = (maxVal / numTicks) * i;
+          // Format as needed (or convert to percentage, etc.)
+          textAlign(RIGHT, CENTER);
+          textSize(12);
+          fill(0);
+          text(thistickVal.toFixed(0), this.chart.chartPosX - 10, yPos);
+        }
+        pop();
+      }
+      
+
+
+    drawAxes() {
+        push();
+        stroke(0);
+        strokeWeight(1);
+        // Draw Y-axis
+        line(this.x, this.y, this.x, this.y + this.chartHeight);
+        // Draw X-axis (at the bottom)
+        line(this.x, this.y + this.chartHeight, this.x + this.chartWidth, this.y + this.chartHeight);
+        pop();
     }
     
 }

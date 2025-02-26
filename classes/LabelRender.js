@@ -3,6 +3,9 @@ class LabelRender extends Chart{
         super(chart);  // Pass the chart instance to the parent class (Chart)
         console.log("BarRender created with", chart);
 
+
+        this.x = chart.chartPosX || 50;         // for example, the x-coordinate of the axis
+        this.y = chart.chartPosY || 100;         // the y-coordinate
     }
 
     renderLabels() {
@@ -21,14 +24,14 @@ class LabelRender extends Chart{
             case 'vertical':
                 this.renderVerticalLabel();
                 break;
-            case 'stacked':
-                this.renderStackedLabel();
-                break;
+            // case 'stacked':
+            //     this.renderStackedLabel();
+            //     break;
             case 'cluster':
-                this.renderClusteredLabel();
+                this.drawRegionLabels();
                 break;
             case 'fullGraph':
-                this.renderFullGraphLabel();
+                this.drawRegionLabels();
                 break;
             case 'line':
                 this.renderLineChart();
@@ -121,5 +124,21 @@ class LabelRender extends Chart{
     
         pop();
     }
-    
+
+    drawRegionLabels(regionLabels) {
+        // regionLabels is an array of objects like:
+        // { text: "Northern Africa (48.9%)", x: 200, y: 420, angle: 45 }
+        for (let lbl of regionLabels) {
+          push();
+          translate(lbl.x, lbl.y);
+          rotate(radians(lbl.angle));  // or rotate(-radians(45)) if you want the other direction
+          textAlign(CENTER, TOP);
+          textSize(12);
+          fill(0);
+          // Make sure lbl.text is a string, not an object
+          text(lbl.text, 0, 0);
+          pop();
+        }
+      }
+      
 }

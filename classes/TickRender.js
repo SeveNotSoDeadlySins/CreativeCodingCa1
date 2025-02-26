@@ -2,6 +2,17 @@ class TickRender extends Chart {
     constructor(chart) {
         super(chart); // Call the BaseRender constructor
         console.log("TickRender created with", chart);
+
+        this.tickLabels = chart.tickLabels || [0, 25, 50, 75, 100];
+
+
+        this.textSize = chart.textSize || 12;
+        this.tickLength = chart.tickLength || 5;
+        this.x = chart.chartPosX || 50;         // for example, the x-coordinate of the axis
+        this.y = chart.chartPosY || 100;         // the y-coordinate
+        this.chartHeight = chart.chartHeight || 400;
+
+
     }
 
     renderTick() {
@@ -17,14 +28,14 @@ class TickRender extends Chart {
             case 'vertical':
                 this.renderVerticalTick();
                 break;
-            case 'stacked':
-                this.renderStackedTick();
-                break;
+            // case 'stacked':
+            //     this.renderStackedTick();
+            //     break;
             case 'cluster':
                 this.renderClusteredTick();
                 break;
             case 'fullGraph':
-                this.renderFullGraphTick();
+                this.drawTicks();
                 break;
             case 'line':
                 this.renderLineChart();
@@ -56,7 +67,7 @@ class TickRender extends Chart {
 
             // Draw Y-axis numbers making sure they are all rounded to their nearest 50
             noStroke();
-            text(i, -15, yPos);
+            text(formatPopulation(i), -15, yPos);
         }
         pop();
 
@@ -85,7 +96,7 @@ class TickRender extends Chart {
 
             // Draw Y-axis numbers making sure they are all rounded to their nearest 50
             noStroke();
-            text(i, xPos + this.gap, 15);
+            text(formatPopulation(i), xPos + this.gap, 15);
         }
         pop();
 
@@ -127,14 +138,31 @@ class TickRender extends Chart {
         this.renderVerticalTick(); // Fallback to vertical ticks if appropriate
     }
 
-    renderFullGraphTick() {
-        console.log("Rendering full graph ticks...");
-        // Custom logic for full graph ticks
-        this.renderVerticalTick(); // Fallback to vertical ticks if appropriate
-    }
+
 
     renderLineChart() {
         console.log("Rendering line chart ticks...");
         // Implement specific tick rendering for line charts
+    }
+
+    drawTicks() {
+        push();
+        textAlign(RIGHT, CENTER);
+        textSize(this.textSize);
+        textFont("sans-serif");
+        fill(0);
+        
+        for (let t of this.tickLabels) {
+          // For a vertical axis that goes from y to y+chartHeight,
+          // 0% is at the bottom and 100% at the top.
+          let tickY = this.y + this.chartHeight - (t / 100) * this.chartHeight;
+          // Draw tick mark:
+          stroke(0);
+          line(this.x - this.tickLength, tickY, this.x, tickY);
+          noStroke();
+          // Draw the tick label, 10px to the left.
+          text(t + "%", this.x - this.tickLength - 5, tickY);
+        }
+        pop();
     }
 }

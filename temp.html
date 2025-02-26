@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Region Chart</title>
+    <script src="libraries/p5.min.js"></script> <!-- Your chart rendering library -->
+</head>
+<body>
+    <div>
+        <label for="regions">Select Region:</label><br>
+        <input type="checkbox" id="easternEurope" value="EASTERN EUROPE" onclick="filterCountriesAndGenerateChart()"> Eastern Europe<br>
+        <!-- You can add other regions as checkboxes here -->
+    </div>
+    
+    <div id="chartContainer">
+        <!-- The chart will be dynamically generated here -->
+    </div>
+
+    <script>
+        // Sample cleaned data structure
+        const cleanedData = {
+            "EASTERN EUROPE": [
+                { country: "Poland", population: 38000000 },
+                { country: "Czech Republic", population: 10650000 },
+                { country: "Hungary", population: 9700000 },
+                // Add other Eastern Europe countries
+            ],
+            "WESTERN EUROPE": [
+                { country: "Germany", population: 83000000 },
+                { country: "France", population: 67000000 },
+                { country: "Italy", population: 60000000 },
+                // Add other Western Europe countries
+            ]
+            // Other regions...
+        };
+
+        // This function filters countries based on the selected region and then generates the graph
+        function filterCountriesAndGenerateChart() {
+            // Get all the checked checkboxes
+            const selectedRegions = document.querySelectorAll('input[type="checkbox"]:checked');
+            
+            let regionData = [];
+
+            // Loop through the selected checkboxes and gather the data for each region
+            selectedRegions.forEach(checkbox => {
+                const region = checkbox.value; // Get the value of the checked checkbox (region name)
+                if (cleanedData[region]) {
+                    regionData = regionData.concat(cleanedData[region]); // Add the data for the selected region to the regionData array
+                }
+            });
+
+            // If there's any region data, generate the chart
+            if (regionData.length > 0) {
+                generateChart(regionData);
+            }
+        }
+
+
+        // This function generates the chart for the selected region
+        function generateChart(regionData) {
+            // Assuming you're using p5.js or another library to generate the chart
+            let chartContainer = document.getElementById("chartContainer");
+            chartContainer.innerHTML = ""; // Clear any existing chart before generating a new one
+
+            // Set up chart parameters
+            const countries = regionData.map(data => data.country);
+            const populations = regionData.map(data => data.population);
+
+            // Here you can use p5.js or any other chart library to generate the chart
+            // For example, let's create a basic bar chart with p5.js (you can customize this part)
+            function setup() {
+                createCanvas(600, 400);
+                let margin = 50;
+                let barWidth = (width - 2 * margin) / countries.length;
+
+                for (let i = 0; i < countries.length; i++) {
+                    let barHeight = map(populations[i], 0, Math.max(...populations), 0, height - 2 * margin);
+                    fill(100, 150, 255); // Bar color
+                    rect(margin + i * barWidth, height - margin - barHeight, barWidth - 10, barHeight); // Bar
+                    fill(0);
+                    textSize(12);
+                    textAlign(CENTER, BOTTOM);
+                    text(countries[i], margin + i * barWidth + barWidth / 2, height - margin + 5); // Country names
+                    text(populations[i], margin + i * barWidth + barWidth / 2, height - margin - barHeight - 5); // Population numbers
+                }
+            }
+            new p5(setup, chartContainer);
+        }
+    </script>
+</body>
+</html>

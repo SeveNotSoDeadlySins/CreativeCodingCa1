@@ -1,8 +1,8 @@
 class Chart {
     constructor(obj) {
         this.data = obj.data; //All of the data that is taken from the CSV file
-        this.xValue = obj.xValue || "Age_Group";
-        this.yValue = obj.yValue || "Female"; // What rows that selected for the Yaxis i.e Male, Female
+        this.xValue = obj.xValue || "Country";
+        this.yValue = obj.yValue || "Female"; // What rows that selected for the Yaxis i.e Male, Female for the sample data
         this.tickNum = obj.tickNum || 8;
         this.chartHeight = obj.chartHeight || 200;
         this.barWidth = obj.barWidth || 15;
@@ -13,7 +13,18 @@ class Chart {
         this.orientation = obj.orientation || "vertical";
         this.isChecked = obj.isChecked || false;
 
+
         console.log("Constructor set orientation to:", this.orientation);
+
+        // Get the maximum raw value
+        let rawMaxValue = max(this.data.map(row => row[this.yValue] || 0));
+        if (rawMaxValue < 1) rawMaxValue = 1;
+
+        // Calculate the maximum value on a log scale (base 10)
+        this.logMaxValue = ceil(Math.log10(rawMaxValue));  // Use Math.log10 here
+
+        // Calculate the scaler using the chart height divided by the logMaxValue
+        this.scaler = this.chartHeight / this.logMaxValue;
 
 
         // Scalers for the y axis
@@ -26,32 +37,35 @@ class Chart {
         this.chartWidth = (this.data.length * this.barWidth) + ((this.data.length - 1) * this.gap) + (this.margin * 2);
 
 
-        // Calculate the max value considering all selected datasets
-        if (this.orientation === "stacked" || this.orientation === "fullGraph") {
-            // For stacked or cluster, add up the values from all selected datasets
-            this.maxValue = ceil(
-                max(this.data.map(row => {
-                    // Sum values from all datasets in this row (considering `this.yValue` as the array of selected datasets)
-                    let sum = 0;
-                    this.yValue.forEach(dataset => {
-                        sum += row[dataset] || 0; // Add value for each selected dataset (use 0 if not present)
-                    });
-                    return sum;
-                })) / 10
-            ) * 10; // Round up to the nearest multiple of 10
-        } else if (this.orientation === "cluster") {
-            // Find the max value from all selected datasets
-            const maxValues = this.yValue.map(yValue => {
-                return max(this.data.map(row => row[yValue] || 0));
-            });
+       
+          
 
-            this.maxValue = ceil(max(maxValues) / 10) * 10;
-        } else {
-            // For other chart types (e.g., vertical, line), take the max of the selected Y-value column
-            this.maxValue = ceil(
-                max(this.data.map(row => row[this.yValue] || 0)) / 10
-            ) * 10; // Round up to the nearest multiple of 10
-        }
+        // Calculate the max value considering all selected datasets
+        // if (this.orientation === "stacked" || this.orientation === "fullGraph") {
+        //     // For stacked or cluster, add up the values from all selected datasets
+        //     this.maxValue = ceil(
+        //         max(this.data.map(row => {
+        //             // Sum values from all datasets in this row (considering `this.yValue` as the array of selected datasets)
+        //             let sum = 0;
+        //             this.yValue.forEach(dataset => {
+        //                 sum += row[dataset] || 0; // Add value for each selected dataset (use 0 if not present)
+        //             });
+        //             return sum;
+        //         })) / 10
+        //     ) * 10; // Round up to the nearest multiple of 10
+        // } else if (this.orientation === "cluster") {
+        //     // Find the max value from all selected datasets
+        //     const maxValues = this.yValue.map(yValue => {
+        //         return max(this.data.map(row => row[yValue] || 0));
+        //     });
+
+        //     this.maxValue = ceil(max(maxValues) / 10) * 10;
+        // } else {
+        //     // For other chart types (e.g., vertical, line), take the max of the selected Y-value column
+        //     this.maxValue = ceil(
+        //         max(this.data.map(row => row[this.yValue] || 0)) / 10
+        //     ) * 10; // Round up to the nearest multiple of 10
+        // }
 
         // Calculate the scaler to fit the chart height
         this.scaler = this.chartHeight / this.maxValue;
@@ -68,8 +82,6 @@ class Chart {
         this.axisTickColor = "black";
         this.chartTickLinesColor = "black";
         this.barColours = ["#FF5733", "#33FF57", "#3357FF", "#F0E68C"]; // Example color set
-
-
     }
 
     render() {
@@ -109,6 +121,8 @@ class Chart {
         // this.axisRenderer.renderAxes();
         // this.labelRenderer.renderLabels();
     }
+
+
 
 
 
