@@ -33,9 +33,6 @@ class LabelRender extends Chart{
             case 'fullGraph':
                 this.drawRegionLabels();
                 break;
-            case 'line':
-                this.renderLineChart();
-                break;
             default:
                 console.error(`Unknown chart type: ${this.orientation}`);
                 break;

@@ -53,36 +53,6 @@ class LegendRender extends Chart{
     }
 
 
-    renderHorizontalBars() {
-        push();
-        translate(this.chartPosX, this.chartPosY); // Position the chart
-
-        // Adjust for margin
-        translate(0, -this.margin); 
-
-        // Ensure the bar height is set appropriately (can use this.barWidth for a consistent bar height)
-        let barHeight = this.barWidth;
-
-        // Loop through the data
-        for (let i = 0; i < this.data.length; i++) {
-            // Calculate the spacing between bars
-            let jump = (barHeight + this.gap) * (i + 1);
-
-            // Calculate the bar width based on data value
-            let barWidth = this.data[i][this.yValue] * this.scaler;
-            console.log(`barWidth: ${barWidth}, jump: ${jump}, barHeight: ${barHeight}`);
-
-            console.log(`Rendering bar at index ${i} with width: ${barWidth}`);
-
-            fill(this.barColour); // Set bar color
-
-            rect(0, -jump, barWidth, barHeight);
-
-        }
-
-        pop();
-    }
-
     renderClusteredBars() {
         push();
         translate(this.chartPosX, this.chartPosY); // Position the chart

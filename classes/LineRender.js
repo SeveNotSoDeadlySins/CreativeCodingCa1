@@ -11,7 +11,7 @@ class LineRender extends Chart{
         // Force the chart to render as horizontal if the checkbox is checked
         console.log(`isChecked: ${isChecked}`);
         if (isChecked === true) {
-            this.renderHorizontalLabel();
+            this.renderHorizontalLines();
             console.log("Rendering horizontal axis");
             return;
         }
@@ -21,14 +21,11 @@ class LineRender extends Chart{
             case 'vertical':
                 this.renderVerticalLines();
                 break;
-            case 'stacked':
-                this.renderHorizontalLines();
-                break;
+            // case 'stacked':
+            //     this.renderVerticalLines();
+            //     break;
             case 'cluster':
                 this.renderClusteredLines();
-                break;
-            case 'line':
-                this.renderLineChart();
                 break;
             default:
                 console.error(`Unknown chart type: ${this.orientation}`);

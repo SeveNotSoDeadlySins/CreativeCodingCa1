@@ -28,10 +28,7 @@ class AxisRender extends Chart{
                 this.renderClustedAxis();
                 break;
             case 'fullGraph':
-                this.drawAxes();
-                break;
-            case 'line':
-                this.renderLineChart();
+                this.graph100axis();
                 break;
             default:
                 console.error(`Unknown chart type: ${this.orientation}`);
@@ -110,7 +107,7 @@ class AxisRender extends Chart{
       
 
 
-    drawAxes() {
+    graph100axis() { //100% graph
         push();
         stroke(0);
         strokeWeight(1);

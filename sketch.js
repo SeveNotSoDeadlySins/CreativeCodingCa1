@@ -13,6 +13,8 @@ function preload() {
     data = loadTable('data/GDP_Country.csv', 'csv' , 'header');
     console.log(data); // Check that the table is loaded and has rows
 
+    customFont  = loadFont("assets/Roboto/static/Roboto-Regular.ttf");
+
 }
 
 
@@ -67,7 +69,6 @@ function draw() {
 
     charts.forEach(chart => {
         chart.setColors();
-        chart.renderTickLines();
         // chart.renderBars();
         chart.render();
 
@@ -314,9 +315,6 @@ function getSelectedValues() {
     // Step 5: Return the array of selected values
     return selectedValues;
 }
-
-
-
 
 
 function generateChart(regionData ,orientation) {

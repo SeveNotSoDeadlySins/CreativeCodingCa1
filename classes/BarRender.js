@@ -1,176 +1,190 @@
-class BarRender extends Chart{
-    constructor(chart) {
-        super(chart);  // Pass the chart instance to the parent class (Chart)
-        console.log("BarRender created with", chart);
+// BarRender class extends the Chart class, handling all bar rendering logic.
+class BarRender extends Chart {
+  constructor(chart) {
+    super(chart);  // Call the Chart (parent) constructor, passing in the chart instance.
+    console.log("BarRender created with", chart);
+  }
 
+  /**
+   * Main renderBars method. It decides which type of chart to render based on the orientation.
+   */
+  renderBars() {
+    console.log("renderBars data:", this.data);
+
+    // Check whether the orientation toggle is checked (e.g., to force horizontal orientation).
+    const isChecked = document.getElementById("toggleOrientation").checked;
+    console.log(`isChecked: ${isChecked}`);
+    if (isChecked === true) {
+      this.renderHorizontalBars();
+      console.log("Rendering horizontal bars");
+      return;
     }
 
+    console.log("renderBars data:", this.data); // Log the data array.
+    console.log("Calling sliceAndDiceTreemap with:", this.data, this.chartPosX, this.chartPosY, this.chartWidth, this.chartHeight);
+    console.log("Rendering chart with orientation:", this.orientation);
+    console.log("Chart orientation on creation:", this.orientation);
 
+    // Switch based on chart orientation.
+    switch (this.orientation) {
+      case 'vertical':
+        // Render a vertical bar chart.
+        this.renderVerticalBars();
+        break;
+      case 'stacked':
+        {
+          // Set local variables for chart dimensions and spacing.
+          let chartPosX = this.chartPosX;
+          let chartPosY = this.chartPosY;
+          let chartWidth = this.chartWidth;
+          let chartHeight = this.chartHeight;
+          let barWidth = this.barWidth;
+          let gap = this.gap;
 
-    renderBars() {
-        console.log("renderBars data:", this.data);
-
-
-        const isChecked = document.getElementById("toggleOrientation").checked;
-    
-        // Force the chart to render as horizontal if the checkbox is checked
-        console.log(`isChecked: ${isChecked}`);
-        if (isChecked === true) {
-            this.renderHorizontalBars();
-            console.log("Rendering horizontal bars");
-            return;
+          // (Optional) Set additional properties if needed.
+          this.barchartPosX = -400;
+          this.barchartPosY = 100;
+          // Render a stacked bar chart by region.
+          this.stackedBarChart(this.data, chartPosX, chartPosY, chartWidth, chartHeight, gap, barWidth);
         }
-
-
-        console.log("renderBars data:", this.data); // shows an array
-
-
-        console.log("Calling sliceAndDiceTreemap with:", this.data, this.chartPosX, this.chartPosY, this.chartWidth, this.chartHeight);
-
-
-        console.log("Rendering chart with orientation:", this.orientation);
-
-    
-        console.log("Chart orientation on creation:", this.orientation);
-
-        // Otherwise, use the default orientation logic
-        switch (this.orientation) {
-            case 'vertical':
-                this.renderVerticalBars();
-                break;
-            case 'stacked':
-                let chartPosX = this.chartPosX;
-                let chartPosY = this.chartPosY;
-                let chartWidth = this.chartWidth;
-                let chartHeight = this.chartHeight;
-                let barWidth = this.barWidth;
-                let gap = this.gap;
-
-
-                this.stackedBarChartByRank(cleanedData, chartPosX, chartPosY, chartWidth, chartHeight, barWidth, gap);
-              break;
-            case 'cluster':
-                this.renderClusteredBars();
-                break;
-            case 'fullGraph':
-
-                this.render100PercentChartByRegion(this.chartPosX, this.chartPosY,this.chartWidth,this.chartHeight);
-                break;
-            case 'treeMap':
-
-                // let groupedData = this.groupSmallItems(this.data, 0.01); // group items < 1% of total
-
-
-                let sortedData = this.data.sort((a, b) => b.population - a.population);
-
-                let rectangles = [];
-                let treemapWidth = 800;
-                let treemapHeight = 600
-
-
-
-
-                this.rowTreemap(this.data, this.chartPosX, this.chartPosY, treemapWidth,treemapHeight, rectangles);
-                // this.findMaxWidth(row, rowHeight, scale, totalWidth); 
-                this.adjustTreemapToFit(rectangles, this.chartPosX, this.chartPosY, treemapWidth, treemapHeight);
-
-                this.drawTreemap(rectangles);
-                break;
-            case 'line':
-                this.renderLineChart();
-                break;
-            default:
-                console.error(`Unknown chart type: ${this.orientation}`);
-                break;
+        break;
+      case 'cluster':
+        // Render clustered bars.
+        this.renderClusteredBars();
+        break;
+      case 'fullGraph':
+        // Render a 100% stacked chart by region.
+        this.render100PercentChartByRegion(this.chartPosX, this.chartPosY, this.chartWidth, this.chartHeight);
+        break;
+      case 'treeMap':
+        {
+          // Sort the data by population in descending order.
+          let sortedData = this.data.sort((a, b) => b.population - a.population);
+          let rectangles = [];
+          let treemapWidth = 800;
+          let treemapHeight = 600;
+          // Build a treemap layout.
+          this.rowTreemap(this.data, this.chartPosX, this.chartPosY, treemapWidth, treemapHeight, rectangles);
+          // Adjust treemap to fit within given dimensions.
+          this.adjustTreemapToFit(rectangles, this.chartPosX, this.chartPosY, treemapWidth, treemapHeight);
+          // Draw the treemap.
+          this.drawTreemap(rectangles);
         }
+        break;
+      default:
+        console.error(`Unknown chart type: ${this.orientation}`);
+        break;
     }
-    
+  }
+
+  /**
+   * Render a vertical bar chart.
+   * Inverts the y-axis so that bars extend upward.
+   * Also draws a title above the chart.
+   */
   renderVerticalBars() {
-      push();
+    //Title
+    push();
+      textAlign(CENTER, CENTER);
+      textSize(16);
+      fill(0);
+      // Place title above the chart. Adjust y-offset as needed.
+      text("Vertical Bar Graph", this.chartPosX + this.chartWidth / 2, this.chartPosY + 60);
+    pop();
+    push();
+      // Translate to chart position.
       translate(this.chartPosX, this.chartPosY);
+      // Invert y-axis so that positive values extend upward.
       scale(1, -1);
+      // Translate further by the left margin.
       translate(this.margin, 0);
       console.log("Rendering vertical bars");
+      // Draw the bars.
       for (let i = 0; i < this.data.length; i++) {
+          // Calculate x-offset for the bar.
           let jump = (this.barWidth + this.gap) * i;
           console.log(`Rendering bar at index ${i} with height: ${this.data[i][this.yValue] * this.scaler}`);
           console.log(`Scaler: ${this.scaler}`);
           fill(this.barColour);
           noStroke();
-          rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0, 0, 5, 5); 
+          // Draw the bar. Bars have rounded top corners (last 2 parameters).
+          rect(jump, 0, this.barWidth, this.data[i][this.yValue] * this.scaler, 0, 0, 5, 5);
       }
-      pop();
+    pop();
   }
-  
 
+  /**
+   * Render a horizontal bar chart.
+   * Translates the chart and draws bars with width proportional to the data value.
+   */
   renderHorizontalBars() {
-      push();
-      translate(this.chartPosX, this.chartPosY); // Position the chart
-
-      // Adjust for margin
-      translate(0, -this.margin); 
-
-      // Ensure the bar height is set appropriately (can use this.barWidth for a consistent bar height)
+    push();
+      // Translate to chart's position.
+      translate(this.chartPosX, this.chartPosY);
+      // Adjust by margin.
+      translate(0, -this.margin);
+      // Set bar height as a fixed value (based on this.barWidth).
       let barHeight = this.barWidth;
-
-      // Loop through the data
+      // Loop through each data item.
       for (let i = 0; i < this.data.length; i++) {
-          // Calculate the spacing between bars
+          // Calculate vertical jump for the bar position.
           let jump = (barHeight + this.gap) * (i + 1);
-
-          // Calculate the bar width based on data value
+          // Calculate the bar width based on the data value.
           let barWidth = this.data[i][this.yValue] * this.scaler;
           console.log(`barWidth: ${barWidth}, jump: ${jump}, barHeight: ${barHeight}`);
-
           console.log(`Rendering bar at index ${i} with width: ${barWidth}`);
-
-          fill(this.barColour); // Set bar color
-
+          fill(this.barColour);
+          // Draw the rectangle.
           rect(0, -jump, barWidth, barHeight);
-
       }
-
-      pop();
+    pop();
   }
 
+  /**
+   * Group data by region.
+   * Returns an object where each key is a region name and its value is an object
+   * containing the total population and an array of data items.
+   */
   groupDataByRegion(data) {
     let regions = {};
     for (let item of data) {
-      // Ensure region is trimmed, etc.
-      let region = item.region.trim();
-      if (!regions[region]) {
-        regions[region] = {
+      // Trim region string.
+      let reg = item.region.trim();
+      if (!regions[reg]) {
+        regions[reg] = {
           totalPop: 0,
           items: []
         };
       }
-      regions[region].items.push(item);
-      regions[region].totalPop += item.population;
+      // Add the item and update the region's total population.
+      regions[reg].items.push(item);
+      regions[reg].totalPop += item.population;
     }
     return regions;
   }
 
+  /**
+   * Calculate the maximum total population across all regions.
+   * Saves the maximum on the instance (this.MaxValue) and returns it.
+   */
   calculateMaxValue() {
-    // Group data by region
     let regions = this.groupDataByRegion(this.data);
     let maxVal = 0;
-    
-    // Iterate over each region
     for (let region in regions) {
-      // For each region, we assume you've already aggregated the top items and computed totalPop
       let regionTotal = regions[region].totalPop;
       if (regionTotal > maxVal) {
         maxVal = regionTotal;
       }
     }
-    this.MaxValue = maxVal; // Save it on the instance
+    this.MaxValue = maxVal;
     return maxVal;
   }
 
-  calculateBarX(baseX, gap, barWidth, index) {
-    return baseX + gap + index * (barWidth + gap);
-  }
 
+  /**
+   * Aggregate region data by keeping the top N items and summing the rest as "Other".
+   * Returns the modified regionData.
+   */
   aggregateRegionData(regionData, topN = 5) {
     regionData.items.sort((a, b) => b.population - a.population);
     if (regionData.items.length > topN) {
@@ -183,8 +197,9 @@ class BarRender extends Chart{
     return regionData;
   }
 
-  
-
+  /**
+   * Find the maximum total population among all regions.
+   */
   findMaxRegionPop(regions) {
     let maxPop = 0;
     for (let regionName in regions) {
@@ -196,287 +211,308 @@ class BarRender extends Chart{
     return maxPop;
   }
 
-  stackedBarChartByRank(data, chartPosX, chartPosY, chartWidth, chartHeight, gapBetweenBars, colWidth) {
-    // 1. Group data by region.
+  /**
+   * Draw a stacked bar chart that groups data by region.
+   * For each region, it sorts items by population, keeps the top three, and aggregates the rest as "Other".
+   * Then it creates 4 columns (for top1, top2, top3, and Other) that are stacked vertically.
+   */
+  stackedBarChart(data, chartX, chartY, chartWidth, chartHeight, gapBetweenCols, colWidth) {
+    // --- 1. Group data by region.
     let regions = {};  
     data.forEach(item => {
-      // Use a default value if Region is missing.
-      let region = (item.Region !== undefined && item.Region !== null) ? item.Region.trim() : "Unknown";
-      if (!regions[region]) {
-        regions[region] = [];
+      let reg = (item.region !== undefined && item.region !== null) ? item.region.trim() : "Unknown";
+      if (!regions[reg]) {
+        regions[reg] = [];
       }
-      regions[region].push(item);
+      regions[reg].push(item);
     });
     let regionNames = Object.keys(regions);
     
-    // 2. For each region, sort items descending by Total and create a 4-element array:
-    //    [ highest, second highest, third highest, other (sum of remainder) ]
+    // --- 2. For each region, sort items descending by population and build a 4-element array:
+    // [ highest, second highest, third highest, other (sum of remainder) ]
     let regionRankValues = {};
-    regionNames.forEach(region => {
-      // Sort descending by Total population.
-      let items = regions[region].sort((a, b) => b.Total - a.Total);
+    regionNames.forEach(reg => {
+      let items = regions[reg].sort((a, b) => b.population - a.population);
       let rankValues = [];
-      // Highest, second, third
       for (let r = 0; r < 3; r++) {
-        rankValues[r] = (r < items.length) ? items[r].Total : 0;
+        rankValues[r] = (r < items.length) ? items[r].population : 0;
       }
-      // Other: sum of items from index 3 onward.
       let other = 0;
       for (let r = 3; r < items.length; r++) {
-        other += items[r].Total;
+        other += items[r].population;
       }
       rankValues[3] = other;
-      regionRankValues[region] = rankValues;
+      regionRankValues[reg] = rankValues;
     });
     
-    // 3. Create an array for each rank (4 columns):
-    // For rank i, build an array of objects: { region, value }
+    // --- 3. Create an array for each rank (4 columns):
     let numRanks = 4;
     let rankData = [];
     for (let r = 0; r < numRanks; r++) {
       rankData[r] = [];
-      regionNames.forEach(region => {
-        let value = regionRankValues[region][r] || 0;
-        rankData[r].push({ region, value });
+      regionNames.forEach(reg => {
+        let value = regionRankValues[reg][r] || 0;
+        rankData[r].push({ region: reg, value });
       });
     }
     
-    // 4. Compute the total value for each rank column.
+    // --- 4. Compute total value for each rank column.
     let rankTotals = rankData.map(col => col.reduce((sum, d) => sum + d.value, 0));
     
-    // 5. Find the maximum total among the columns for scaling.
+    // --- 5. Find the maximum total among the columns for scaling.
     let maxRankTotal = Math.max(...rankTotals);
+    if (maxRankTotal === 0) {
+      console.error("No data to render.");
+      return;
+    }
     
-    // 6. Set horizontal spacing for the rank columns.
-    let gap = gapBetweenBars || 20;
+    // --- 6. Set horizontal spacing for the rank columns.
+    let colGap = gapBetweenCols || 20;
     let columnWidth = colWidth || 40;
-    let totalColumnsWidth = numRanks * columnWidth + (numRanks + 1) * gap;
+    let totalColumnsWidth = numRanks * columnWidth + (numRanks + 1) * colGap;
+    let startX = chartX + (chartWidth - totalColumnsWidth) / 2;
     
-    // Optionally, center the columns in chartWidth:
-    let startX = chartPosX + (chartWidth - totalColumnsWidth) / 2;
-    
-    // 7. Draw Y-axis and X-axis.
+    // --- 7. Draw axes.
     push();
       stroke(0);
       strokeWeight(2);
-      line(startX, chartPosY, startX, chartPosY + chartHeight);
-      line(startX, chartPosY + chartHeight, startX + totalColumnsWidth, chartPosY + chartHeight);
+      line(startX, chartY, startX, chartY + chartHeight);
+      line(startX, chartY + chartHeight, startX + totalColumnsWidth, chartY + chartHeight);
     pop();
     
-    // 8. Define a color palette for regions.
+    // --- 8. Draw Y-axis tick labels.
+    let numTicks = 5;
+    for (let i = 0; i <= numTicks; i++) {
+      let tickValue = (i / numTicks) * maxRankTotal;
+      let tickY = chartY + chartHeight - (tickValue / maxRankTotal) * chartHeight;
+      stroke(0);
+      line(startX - 5, tickY, startX, tickY);
+      noStroke();
+      fill(0);
+      textAlign(RIGHT, CENTER);
+      text(tickValue.toFixed(0), startX - 10, tickY);
+    }
+    
+    // --- 9. Create a color mapping for regions.
     let regionColors = {};
     let presetColors = [
-      color(255, 99, 132),
-      color(54, 162, 235),
-      color(255, 206, 86),
-      color(75, 192, 192),
-      color(153, 102, 255),
-      color(255, 159, 64)
+      color(255, 99, 132),   // red
+      color(54, 162, 235),   // blue
+      color(75, 192, 192),   // green
+      color(153, 102, 255),  // purple
+      color(255, 159, 64),   // orange
+      color(200, 200, 0)     // yellow
     ];
-    // Use sorted region names for consistency.
     regionNames.sort();
-    regionNames.forEach((region, idx) => {
-      regionColors[region] = presetColors[idx % presetColors.length];
+    regionNames.forEach((reg, idx) => {
+      regionColors[reg] = presetColors[idx % presetColors.length];
     });
     
-    // 9. Draw each rank column.
+    // --- 10. Draw each rank column.
     for (let r = 0; r < numRanks; r++) {
-      // x-position for this column.
-      let colX = startX + gap + r * (columnWidth + gap);
-      // Scale so that maxRankTotal maps to chartHeight.
+      let colX = startX + colGap + r * (columnWidth + colGap);
       let scaleFactor = chartHeight / maxRankTotal;
-      
-      // For each region in this column, sort alphabetically for consistent order.
       let colData = rankData[r].sort((a, b) => a.region.localeCompare(b.region));
       
-      let currentY = chartPosY + chartHeight; // bottom of chart
+      let currentY = chartY + chartHeight;
       for (let d of colData) {
         let segHeight = d.value * scaleFactor;
+        // Use the color specific to the region.
         fill(regionColors[d.region]);
         noStroke();
         rect(colX, currentY - segHeight, columnWidth, segHeight);
-        // Optionally, label the segment if tall enough.
-        if (segHeight > 15) {
-          fill(0);
-          textSize(10);
-          textAlign(CENTER, CENTER);
-          let pctString = (d.value / rankTotals[r] * 100).toFixed(1) + "%";
-          text(d.region + " " + pctString, colX + columnWidth / 2, currentY - segHeight / 2);
-        }
+
         currentY -= segHeight;
       }
+
+      // Draw the chart title above the entire chart.
+      // This could be moved elsewhere if desired.
+      let titleY = chartY + chartHeight + 40;
+      textAlign(CENTER, TOP);
+      text("Population per Region Comparison", chartX + chartWidth / 2, titleY);
       
-      // Label the column below with the rank.
+      // Label the column below with the rank (rotated by 45 degrees).
       fill(0);
       textSize(12);
       textAlign(CENTER, TOP);
       let rankLabel = (r < 3) ? "Rank " + (r + 1) : "Other";
       push();
-        translate(colX + columnWidth / 2, chartPosY + chartHeight + 5);
-        rotate(radians(45));
-        text(rankLabel, 0, 0);
+        translate(colX + columnWidth / 2, chartY + chartHeight + 5);
+        rotate(45);
+        text(rankLabel, 10, 10);
       pop();
     }
     
-    // Optionally, you can add Y-axis tick labels here.
+    // --- 11. Draw a legend to the left of the chart.
+    // Position legend 50px to the left of startX.
+    let legendX = startX - 320;
+    let legendY = chartY;
+    let boxSize = 15;
+    let legendSpacing = 25;
+    push();
+      textSize(12);
+      textAlign(LEFT, CENTER);
+      for (let reg of regionNames) {
+        fill(regionColors[reg]);
+        noStroke();
+        rect(legendX, legendY, boxSize, boxSize);
+        
+        fill(0);
+        text(reg, legendX + boxSize + 5, legendY + boxSize / 2);
+        
+        legendY += legendSpacing;
+      }
+    pop();
   }
   
-  
 
-
-  // y = this.chartPosY x = this.chartPosX
-  render100PercentChartByRegion(x, y, chartWidth, chartHeight) {
-    // 1) Draw axes (optional)
+  /**
+   * Render a 100% stacked chart by region.
+   * For each region, it groups countries, sorts by population, aggregates the top 3 and "Other",
+   * then draws a full-height bar that represents 100% for that region.
+   */
+  render100PercentChartByRegion(chartX, chartY, chartWidth, chartHeight) {
+    // --- 1) Draw axes.
     push();
-    stroke(0);
-    strokeWeight(2);
-    // Y-axis
-    line(x, y, x, y + chartHeight);
-    // X-axis
-    line(x, y + chartHeight, x + chartWidth, y + chartHeight);
+      stroke(0);
+      strokeWeight(2);
+      line(chartX, chartY, chartX, chartY + chartHeight); // Y-axis
+      line(chartX, chartY + chartHeight, chartX + chartWidth, chartY + chartHeight); // X-axis
     pop();
-  
-    // 2) (Optional) draw Y-axis labels or ticks if needed, using your LabelRender or TickRender.
-    // let labelRender = new LabelRender(this);
-    // labelRender.drawYAxisLabels(x, y, chartHeight);
-  
-    // 3) Group data by region
+    
+    // --- 2) Group data by region.
     let regions = this.groupDataByRegion(this.data);
     let regionNames = Object.keys(regions);
-    let numRegions = regionNames.length;
-  
-    // 4) Calculate total world population
-    let worldTotal = this.data.reduce((sum, d) => sum + d.population, 0);
-  
-    // 5) Determine bar spacing
-    let gap = 50;
-    let barWidth = (chartWidth - (numRegions + 1) * gap) / numRegions;
-  
-    // We'll store an array of label objects for each region
-    let regionLabels = [];
-  
-    // 6) Loop over each region to draw its 100% stacked bar
-    for (let i = 0; i < numRegions; i++) {
-      let regionName = regionNames[i];          // e.g., "Northern Africa"
-      let regionData = regions[regionName];
-  
-      // Sort countries descending by population
-      regionData.items.sort((a, b) => b.population - a.population);
-  
-      // If more than 3 countries, keep top 3 and aggregate the rest as "Other"
-      regionData.items.sort((a, b) => b.population - a.population);
-
-      // If there are more than 3 countries, keep the top 3 and aggregate the rest as "Other"
-      if (regionData.items.length > 3) {
-        let topItems = regionData.items.slice(0, 3);
-        let otherPop = regionData.items.slice(3).reduce((sum, item) => sum + item.population, 0);
-        topItems.push({ country: "Other", population: otherPop });
-        regionData.items = topItems;
-        regionData.totalPop = topItems.reduce((sum, item) => sum + item.population, 0);
-      }
-
+    let numberOfRegions = regionNames.length;
+    
+    // --- 3) Compute total world population.
+    let totalWorldPopulation = this.data.reduce((sum, d) => sum + d.population, 0);
+    
+    // --- 4) Determine spacing between region bars.
+    let barGap = 50;
+    let regionBarWidth = (chartWidth - (numberOfRegions + 1) * barGap) / numberOfRegions;
+    
+    // --- 5) Prepare an array for region labels.
+    let regionLabelArray = [];
+    
+    // --- 6) Loop over each region to draw its 100% stacked bar.
+    for (let regionIndex = 0; regionIndex < numberOfRegions; regionIndex++) {
+      let regionName = regionNames[regionIndex];
+      let regionInfo = regions[regionName];
       
-  
-      let totalPop = regionData.totalPop;
-      // e.g. "48.9%"
-      let regionPct = ((totalPop / worldTotal) * 100).toFixed(1) + "%";
-  
-      // 7) Compute bar position
-      let barX = x + gap + i * (barWidth + gap);
-      let currentY = y + chartHeight;  // bottom of the bar
-  
-      // (Optional) Outline the bar
+      // Sort the countries in the region by population (largest first)
+      regionInfo.items.sort((a, b) => b.population - a.population);
+      
+      // If more than 3 countries, keep top 3 and aggregate the rest as "Other"
+      if (regionInfo.items.length > 3) {
+        let topCountries = regionInfo.items.slice(0, 3);
+        let otherPopulation = regionInfo.items.slice(3).reduce((sum, country) => sum + country.population, 0);
+        topCountries.push({ country: "Other", population: otherPopulation });
+        regionInfo.items = topCountries;
+        regionInfo.totalPop = topCountries.reduce((sum, country) => sum + country.population, 0);
+      }
+      
+      let totalRegionPopulation = regionInfo.totalPop;
+      let regionPercentage = ((totalRegionPopulation / totalWorldPopulation) * 100).toFixed(1) + "%";
+      
+      // --- 7) Compute the x-position for this region’s bar.
+      let regionBarX = chartX + barGap + regionIndex * (regionBarWidth + barGap);
+      let segmentBottomY = chartY + chartHeight;  // Bottom of the bar
+    
+      // --- 8) (Optional) Outline the bar.
       stroke(0);
       noFill();
-      rect(barX, y, barWidth, chartHeight);
-  
-      // 8) Draw each country's segment from bottom up
+      rect(regionBarX, chartY, regionBarWidth, chartHeight);
+    
+      // --- 9) Draw each country's segment from bottom up.
       noStroke();
-      for (let item of regionData.items) {
-        let fraction = item.population / totalPop;
-        let segHeight = fraction * chartHeight;
-  
-        fill(random(100,255), random(100,255), random(100,255));
-        rect(barX, currentY - segHeight, barWidth, segHeight);
-  
-        // If tall enough, label inside the bar
-        if (segHeight > 20) {
+      for (let countryData of regionInfo.items) {
+        let fraction = countryData.population / totalRegionPopulation;
+        let segmentHeight = fraction * chartHeight;
+        
+        // Draw the segment with a random color.
+        fill(random(100, 255), random(100, 255), random(100, 255));
+        rect(regionBarX, segmentBottomY - segmentHeight, regionBarWidth, segmentHeight);
+        
+        // If tall enough, label inside the segment.
+        if (segmentHeight > 20) {
           fill(0);
           textSize(10);
           textAlign(CENTER, CENTER);
-          let pctString = (fraction * 100).toFixed(1) + "%";
-          text(item.country + " " + pctString, barX + barWidth / 2, currentY - segHeight / 2);
+          let percentageString = (fraction * 100).toFixed(1) + "%";
+          text(countryData.country + " " + percentageString, regionBarX + regionBarWidth / 2, segmentBottomY - segmentHeight / 2);
         }
-        currentY -= segHeight;
+        segmentBottomY -= segmentHeight;
       }
-  
-      // 9) Build a label object for the region, placed below the bar
-      // Use a string for text, not an object
-      regionLabels.push({
-        text: `${regionName} (${regionPct})`, // <-- this is a STRING
-        x: barX + barWidth / 2,
-        y: y + chartHeight + 20, // 20 px below the bar
-        angle: 45                // rotate 45 degrees
+      
+      // --- 10) Build a label object for the region.
+      regionLabelArray.push({
+        text: `${regionName} (${regionPercentage})`,
+        x: regionBarX + regionBarWidth / 2,
+        y: chartY + chartHeight + 20,  // 20 px below the bar
+        angle: 45                      // rotate 45 degrees
       });
     }
-  
-    // 10) Store region labels on the instance so LabelRender can use them
-    this.chartRegionLabels = regionLabels;
-
-    console.log("sdfsdfsfsfsdfs")
-    console.log(this.chartRegionLabels)
-  
-    // If you want to draw them immediately, create LabelRender and call a method:
+    
+    // --- 11) Store region labels on the instance for later use.
+    this.chartRegionLabels = regionLabelArray;
+    console.log("Region labels:", this.chartRegionLabels);
+    
+    // --- 12) Draw region labels using LabelRender.
     let labelRender = new LabelRender(this);
     labelRender.drawRegionLabels(this.chartRegionLabels);
   }
   
+  /**
+   * Render clustered bars.
+   * For each data row, it draws a cluster of bars for each dataset (e.g., Male, Female).
+   */
   renderClusteredBars() {
-      push();
-      translate(this.chartPosX, this.chartPosY); // Position the chart
-      scale(1, -1); // Flip the y-axis for better visualization
+    push();
+      translate(this.chartPosX, this.chartPosY); // Move to chart position
+      scale(1, -1); // Flip the y-axis for upward-growing bars
   
-      // Adjust for margin (to create space at the top)
+      // Adjust for margin.
       translate(this.margin, 0);
   
-      // Loop through the data (for each category)
+      // Loop through each data row (each category).
       for (let i = 0; i < this.data.length; i++) {
           push(); // Create a new transformation context for each category
   
-          // Calculate the position for the current cluster (group of bars)
-          let clusterXPos = (this.barWidth * this.yValue.length + this.gap) * i; // Space between clusters (categories)
-  
-          // Loop through each selected Y-axis value and draw each corresponding bar for the cluster
+          // Calculate the starting x position for the cluster.
+          let clusterXPos = (this.barWidth * this.yValue.length + this.gap) * i;
+          
+          // Loop through each dataset in yValue.
           for (let j = 0; j < this.yValue.length; j++) {
-              // Calculate the bar width based on data value and scaler
-              let barWidth = this.data[i][this.yValue[j]] * this.scaler;
+              // Calculate the bar width for this dataset.
+              let barWidthVal = this.data[i][this.yValue[j]] * this.scaler;
+              console.log(`Rendering cluster bar at index ${i}, dataset: ${this.yValue[j]}, value: ${this.data[i][this.yValue[j]]} with width: ${barWidthVal}`);
+              console.log(`Scaler: ${this.scaler}`);
   
-              // Debugging log
-              console.log(`Rendering cluster bar at index ${i}, Y-axis: ${this.data[i][this.yValue[j]]} with width: ${barWidth}`);
-              console.log(`Rendering Scaler ${this.scaler}`);
-  
-              // Set the color for the bar (cycle through a set of colors)
+              // Set the fill color cycling through barColours.
               noStroke();
-              fill(this.barColours[j % this.barColours.length]); // Use cycling colors
+              fill(this.barColours[j % this.barColours.length]);
   
-              // Calculate the position for each bar within the cluster (adjust the position based on index)
-              let barPositionX = clusterXPos + j * this.barWidth; // Position each bar within the cluster without adding the gap here
-  
-              // Debugging position calculation
+              // Calculate x-position for this bar in the cluster.
+              let barPositionX = clusterXPos + j * this.barWidth;
               console.log(`Position for Bar ${j}: ${barPositionX}`);
   
-              // Draw the bar in the cluster (each bar for this category)
-              rect(barPositionX, 0, this.barWidth, barWidth); // Vertical bars
+              // Draw the vertical bar for this dataset.
+              rect(barPositionX, 0, this.barWidth, barWidthVal);
           }
   
-          pop(); // End the transformation context for this category
+          pop(); // End transformation for this category.
       }
-  
-      pop(); // End the chart position transformation context
+    pop(); // End the chart position transformation.
   }
 
+  /**
+   * Construct a treemap layout (row-based) for the data.
+   * The data is divided into rows, each row's items are laid out horizontally,
+   * and any leftover items are pushed into a new row.
+   * The rectangles array is populated with objects containing position and dimensions.
+   */
   rowTreemap(data, x, y, totalWidth, totalHeight, rectangles) {
-    // Calculate total population, overall area, and scale factor
     let totalPop = data.reduce((sum, d) => sum + d.population, 0);
     let area = totalWidth * totalHeight;
     let scale = area / totalPop;
@@ -484,67 +520,58 @@ class BarRender extends Chart{
     let currentY = y;
     let row = [];
     let rowSum = 0;
-    let currentUsedWidth = 0;  // track used width in current row
-    const MIN_ROW_HEIGHT = 35; // minimum row height for readability
-    const maxItemsPerRow = 4;  // optional: force new row after 4 items
+    let currentUsedWidth = 0;  // Track the used width in the current row.
+    const MIN_ROW_HEIGHT = 35; // Minimum row height for readability.
+    const maxItemsPerRow = 4;  // force a new row after 4 items.
     
     for (let i = 0; i < data.length; i++) {
       let item = data[i];
       
-      // Estimate this item’s width if it were added to the current row
+      // Estimate the row if this item is added.
       let tentativeRowSum = rowSum + item.population;
       let tentativeRowArea = tentativeRowSum * scale;
       let tentativeRowHeight = tentativeRowArea / totalWidth;
-      // Clamp the height to ensure readability
       tentativeRowHeight = Math.max(tentativeRowHeight, MIN_ROW_HEIGHT);
       
-      // Calculate the width of this item if placed in the current row:
+      // Estimate the width of this item in the current row.
       let itemArea = item.population * scale;
       let itemWidth = itemArea / tentativeRowHeight;
       
-      // If adding this item would exceed the totalWidth OR we have too many items:
+      // If adding this item would exceed totalWidth or too many items, finalize the row.
       if (currentUsedWidth + itemWidth > totalWidth || row.length >= maxItemsPerRow) {
-        // Finalize current row: adjust widths so that the row exactly fills totalWidth
         this.finalizeRow(row, rowSum, x, currentY, totalWidth, scale, rectangles, MIN_ROW_HEIGHT);
-        
-        // Move to the next row: update vertical position based on the finalized row height.
-        // We assume finalizeRow returns the actual row height.
         let finalizedRowHeight = this.finalizeRow(row, rowSum, x, currentY, totalWidth, scale, [], MIN_ROW_HEIGHT);
         currentY += finalizedRowHeight;
-        
-        // Reset row and width accumulator
         row = [];
         rowSum = 0;
         currentUsedWidth = 0;
       }
       
-      // Add the item to the current row
+      // Add item to the row.
       row.push(item);
       rowSum += item.population;
-      // Recompute current row height with updated rowSum
       let rowArea = rowSum * scale;
       let rowHeight = rowArea / totalWidth;
       rowHeight = Math.max(rowHeight, MIN_ROW_HEIGHT);
-      // And update used width based on row's current height
-      // (Recalculate width for each item in the row; for simplicity, we add the new item’s width)
       currentUsedWidth += itemArea / rowHeight;
     }
     
-    // Finalize any leftover items in the last row
+    // Finalize any leftover items.
     if (row.length > 0) {
       this.finalizeRow(row, rowSum, x, currentY, totalWidth, scale, rectangles, MIN_ROW_HEIGHT);
     }
   }
-  
-  // A helper function to layout a row and distribute leftover width so that row exactly fills totalWidth.
-  // It returns the row's height.
+
+  /**
+   * Helper function to layout a row in the treemap.
+   * It adjusts widths so the row exactly fills totalWidth and returns the row's height.
+   */
   finalizeRow(row, rowSum, x, y, totalWidth, scale, rectangles, MIN_ROW_HEIGHT) {
-    // Compute the area and initial row height
     let rowArea = rowSum * scale;
     let rowHeight = rowArea / totalWidth;
     rowHeight = Math.max(rowHeight, MIN_ROW_HEIGHT);
     
-    // Compute each item's width using the clamped row height
+    // Compute widths for each item in the row.
     let rowRects = [];
     let usedWidth = 0;
     for (let item of row) {
@@ -554,7 +581,7 @@ class BarRender extends Chart{
       usedWidth += itemWidth;
     }
     
-    // Distribute any leftover space proportionally so that the sum equals totalWidth
+    // Distribute any leftover width proportionally.
     let leftover = totalWidth - usedWidth;
     if (leftover > 0 && rowRects.length > 0) {
       for (let rect of rowRects) {
@@ -563,33 +590,30 @@ class BarRender extends Chart{
       }
     }
     
-    // Set x positions for the row
+    // Set x-positions for each rectangle.
     let currentX = x;
     for (let rect of rowRects) {
       rect.x = currentX;
       currentX += rect.w;
-    }
-    
-    // If a destination array is provided, push these rectangles into it
-    if (rectangles) {
-      rectangles.push(...rowRects);
+      if (rectangles) {
+        rectangles.push(rect);
+      }
     }
     
     return rowHeight;
   }
     
-      
-      // layoutRow places each item in the row side by side and returns the row height.
+  /**
+   * Another helper function to layout a row (alternate implementation).
+   * This version clamps the row height between a minimum and maximum.
+   */
   layoutRow(row, rowSum, x, y, totalWidth, scale, rectangles) {
     let rowArea = rowSum * scale;
     let rowHeight = rowArea / totalWidth;
     
-    // Enforce a minimum row height of 35px
+    // Enforce a minimum and maximum row height.
     const MIN_HEIGHT = 35;
-    // Optionally, enforce a maximum row height (if desired)
-    const MAX_HEIGHT = 100; // adjust as needed
-    
-    // Clamp the rowHeight to be within [MIN_HEIGHT, MAX_HEIGHT]
+    const MAX_HEIGHT = 100; // Adjust as needed.
     rowHeight = Math.max(rowHeight, MIN_HEIGHT);
     rowHeight = Math.min(rowHeight, MAX_HEIGHT);
     
@@ -597,13 +621,13 @@ class BarRender extends Chart{
     let rowRects = [];
     let usedWidth = 0;
     
-    // First pass: compute each item's width
+    // Compute each item's width.
     for (let item of row) {
       let itemArea = item.population * scale;
       let itemWidth = itemArea / rowHeight;
       rowRects.push({
-        x: 0, // placeholder; we'll set x in a second pass
-        y: y,
+        x: 0, // placeholder
+        y: y, //y is equal to chartPosY
         w: itemWidth,
         h: rowHeight,
         country: item.country,
@@ -612,7 +636,7 @@ class BarRender extends Chart{
       usedWidth += itemWidth;
     }
     
-    // Distribute leftover horizontal space to fill totalWidth exactly
+    // Distribute leftover horizontal space.
     let leftover = totalWidth - usedWidth;
     if (leftover > 0 && rowRects.length > 0) {
       for (let rect of rowRects) {
@@ -621,7 +645,7 @@ class BarRender extends Chart{
       }
     }
     
-    // Second pass: fix the x positions so they line up exactly
+    // Fix the x positions.
     let fixX = x;
     for (let rect of rowRects) {
       rect.x = fixX;
@@ -632,9 +656,11 @@ class BarRender extends Chart{
     return rowHeight;
   }
     
-  
+  /**
+   * Adjusts the treemap rectangles so they fit within the target dimensions.
+   */
   adjustTreemapToFit(rectangles, x, y, targetWidth, targetHeight) {
-    // Compute the current bounding box of all rectangles
+    // Compute current bounding box.
     let maxX = 0, maxY = 0;
     for (let rect of rectangles) {
       maxX = Math.max(maxX, rect.x + rect.w);
@@ -645,7 +671,7 @@ class BarRender extends Chart{
     let scaleX = targetWidth / currentWidth;
     let scaleY = targetHeight / currentHeight;
     
-    // Choose a uniform scale factor (e.g., the smaller one)
+    // Use the smaller scale factor uniformly.
     let scaleFactor = Math.min(scaleX, scaleY);
     
     for (let rect of rectangles) {
@@ -654,183 +680,26 @@ class BarRender extends Chart{
       rect.w *= scaleFactor;
       rect.h *= scaleFactor;
     }
-
-    console.log(`The max is this woiwowowowow ${maxX}`)
-  }
   
-    
-
-  // groupSmallItems(data, thresholdFraction = 0.01) {
-  //     // 1) Calculate total population
-  //     let totalPop = data.reduce((sum, d) => sum + d.population, 0);
-    
-  //     // 2) Determine threshold
-  //     let threshold = totalPop * thresholdFraction; // e.g., 1% of total
-    
-  //     // 3) Separate big vs. small items
-  //     let mainItems = [];
-  //     let smallItemsSum = 0;
-    
-  //     for (let item of data) {
-  //       if (item.population < threshold) {
-  //         // add to the 'Other' bucket
-  //         smallItemsSum += item.population;
-  //       } else {
-  //         // keep it as is
-  //         mainItems.push(item);
-  //       }
-  //     }
-    
-  //     // 4) If we have small items, create a single "Other" item
-  //     if (smallItemsSum > 0) {
-  //       mainItems.push({
-  //         country: "Other",
-  //         population: smallItemsSum
-  //       });
-  //     }
-    
-  //     // 5) Return the new array
-  //     return mainItems;
-  //   }
-    
-  
-  // Helper function: calculates the "worst" aspect ratio of the row
-  worstAspectRatio(row, rowSum, shortSide, scale) {
-    let rowArea = rowSum * scale;
-    let minPop = Infinity, maxPop = -Infinity;
-    for (let item of row) {
-      if (item.population < minPop) minPop = item.population;
-      if (item.population > maxPop) maxPop = item.population;
-    }
-  
-    let s = shortSide;
-    let r1 = (s * s * maxPop) / rowArea;
-    let r2 = (s * s * minPop) / rowArea;
-    return Math.max(r1, r2);
+    console.log(`Adjusted treemap: max X = ${maxX}`);
   }
 
-
-
-      
-    // sliceAndDiceTreemap(data, x, y, w, h, rectangles) {
-    //     // Base case: if no data left, just return
-    //     if (data.length === 0) return;
-      
-    //     // If there's only 1 item, fill the entire region
-    //     if (data.length === 1) {
-    //       rectangles.push({
-    //         x, y, w, h,
-    //         country: data[0].country,
-    //         population: data[0].population
-    //       });
-    //       return;
-    //     }
-      
-    //     // Calculate the total area (in pixels) of this treemap region
-    //     // and total population of the data slice
-    //     let totalPop = data.reduce((sum, d) => sum + d.population, 0);
-    //     let totalArea = w * h;
-    //     // Each "1 population unit" corresponds to this many pixels
-    //     let scale = totalArea / totalPop;
-      
-    //     // We'll build rows from top to bottom
-    //     let currentRow = [];
-    //     let currentRowSum = 0;
-      
-    //     let remaining = data.slice(); // Copy so we can pop from it
-      
-    //     // Start placing rows
-    //     let currentY = y;
-    //     let remainingHeight = h;
-      
-    //     while (remaining.length > 0) {
-    //       // Start a new row with the first item
-    //       currentRow = [remaining.shift()];
-    //       currentRowSum = currentRow[0].population;
-      
-    //       // Keep adding items to the row while it doesn't get "too skinny"
-    //       let done = false;
-    //       while (!done && remaining.length > 0) {
-    //         // Check if adding the next item would make the row aspect ratio worse
-    //         let nextItem = remaining[0];
-    //         let testRow = currentRow.concat([nextItem]);
-    //         let testSum = currentRowSum + nextItem.population;
-      
-    //         // If the aspect ratio gets worse, stop. Otherwise, add the item to the row.
-    //         if (this.worseAspectRatio(currentRow, currentRowSum, testRow, testSum, w, scale)) {
-    //           done = true; 
-    //         } else {
-    //           // Accept the next item
-    //           currentRow.push(nextItem);
-    //           currentRowSum = testSum;
-    //           remaining.shift();
-    //         }
-    //       }
-      
-    //       // Now we have our row. Compute the row height:
-    //       // rowArea = (currentRowSum * scale) in pixels
-    //       // rowHeight = rowArea / total width
-    //       let rowArea = currentRowSum * scale;
-    //       let rowHeight = rowArea / w;
-      
-    //       // Place each item in this row
-    //       let currentX = x;
-    //       for (let item of currentRow) {
-    //         let itemArea = item.population * scale;
-    //         let itemWidth = itemArea / rowHeight; // width = area / height
-      
-    //         rectangles.push({
-    //           x: currentX,
-    //           y: currentY,
-    //           w: itemWidth,
-    //           h: rowHeight,
-    //           country: item.country,
-    //           population: item.population
-    //         });
-      
-    //         currentX += itemWidth;
-    //       }
-      
-    //       // Move down for the next row
-    //       currentY += rowHeight;
-    //       remainingHeight -= rowHeight;
-      
-    //       // If there's no space left, stop
-    //       if (remainingHeight <= 0) break;
-    //     }
-    // }
-      
-    // A simple "aspect ratio check" for the row-based approach
-    // The logic: if the row with the new item is more "squashed" than the old row, we say it's "worse" 
-
-    
-    // Find the maximum item width if each item has area = (pop * scale) and rowHeight = ...
-    findMaxWidth(row, rowHeight, scale, totalWidth) {
-      let maxW = 0;
-      for (let item of row) {
-        let itemArea = item.population * scale;
-        let itemWidth = itemArea / rowHeight;
-        if (itemWidth > maxW) maxW = itemWidth;
-      }
-      return maxW;
+  drawTreemap(rectangles) {
+    for (let r of rectangles) {
+      // Draw each rectangle with a random color.
+      fill(random(100, 255), random(100, 255), random(100, 255));
+      stroke(0);
+      rect(r.x, r.y, r.w, r.h);
+  
+      // Draw a label in the center of the rectangle.
+      fill(0);
+      textSize(12);
+      textAlign(CENTER, CENTER);
+      text(r.country + "\n" + formatPopulation(r.population), r.x + r.w / 2, r.y + r.h / 2);
     }
-      
-    
+  }
+  
 
-    drawTreemap(rectangles) {
-      for (let r of rectangles) {
-        fill(random(100, 255), random(100, 255), random(100, 255));
-        stroke(0);
-        rect(r.x, r.y, r.w, r.h);
-    
-        fill(0);
-        textSize(12);
-        textAlign(CENTER, CENTER);
-        text(
-          r.country + "\n" + formatPopulation(r.population),
-          r.x + r.w / 2,
-          r.y + r.h / 2
-        );
-      }
-    }
+  
+  // End of BarRender class.
 }
